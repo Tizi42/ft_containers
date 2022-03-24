@@ -15,14 +15,30 @@
 
 namespace ft 
 {
+/* ************************************************************************** */
+/*                                                                            */
+/*                            Prototypes			  		 				  */
+/*  																	      */
+/* ************************************************************************** */	
 	template <class T, class Allocator = std::allocator<T> >
 	class vector
 	{
 	public:
 
 	//Typedef
-
-	//Basics
+		typedef typename Allocator::reference			reference;
+		typedef typename Allocator::const_reference		const_reference;
+		typedef											iterator;
+		typedef											const_iterator;
+		typedef	size_t									size_type;
+		typedef	ptrdiff_t								difference_type;
+		typedef	T										value_type;
+		typedef	Allocator 								allocator_type;
+		typedef	typename Allocator::pointer				pointer;
+		typedef	typename Allocator::const_pointer		const_pointer
+		typedef	std::reverse_iterator<iterator>			reverse_iterator;
+		typedef	std::reverse_iterator<const_iterator>	const_reverse_iterator;
+	//Canonical form
 		explicit vector(const allocator_type& alloc = allocator_type());	
 		explicit vector(size_type n, const value_type& val = value_type(),
 						const allocator_type& alloc = allocator_type());
@@ -73,7 +89,12 @@ namespace ft
 		iterator	erase(iterator first, iterator last);
 		void		swap(vector& x);
 		void		clear();
-	}
+
+	private:
+		pointer			_val;
+		size_type		_size;
+		allocator_type	_alloc;
+	};
 //Relational operators
 	template <class T, class Allocator>
 	bool	operator==(const vector<T,Allocator>& x,
@@ -93,9 +114,72 @@ namespace ft
 	template <class T, class Allocator>
 	bool	operator<=(const vector<T,Allocator>& x,
 						const vector<T,Allocator>& y);
-//Algo
+//Algo non member
 	template <class T, class Allocator>
 	void	swap(vector<T,Allocator>& x, vector<T,Allocator>& y);
+
+/* ************************************************************************** */
+/*                                                                            */
+/*                            Implementation			  		 			  */
+/*  																	      */
+/* ************************************************************************** */
+
+//Canonical form
+		explicit vector::vector(const allocator_type& alloc = allocator_type())
+		{
+			this->_size = 0;
+			this->_alloc = alloc;
+			this->_val = this->_alloc.allocate(this->_size);
+		}
+
+		explicit vector::vector(size_type n, const value_type& val = value_type(),
+						const allocator_type& alloc = allocator_type())
+		{
+			this->_size = n;
+			this->_alloc = alloc;
+			this->_val = this->_alloc.allocate(this->_size);
+			this->assign(n, val);
+		}
+
+		template <class InputIterator>
+		vector::vector(InputIterator first, InputIterator last,
+				const allocator_type& alloc = allocator_type())
+		{
+			this->_size = last - first;
+			this->_alloc = alloc;
+			this->_val = this->_alloc.allocate(this->_size);
+			this->assign(first, last);
+		}
+
+		vector::vector(const vector& x)
+		{
+			*this = x;
+		}
+
+		~vector::vector()
+		{
+			for (pointer p = this->_val + size; p != this->_val;)
+				this->_alloc.destroy(--p);
+			this->_alloc.deallocate(this->_val, this->_size);
+		}
+
+		vector& vector::operator=(const vector& x)
+		{
+			//_size? _alloc?
+			this->assign(x.begin(), x.end());
+			return (*this);
+		}
+
+	//Iterators
+		iterator				begin();
+		const_iterator			begin() const;
+		iterator				end();
+		const_iterator			end() const;
+		reverse_iterator		rbegin();
+		const_reverse_iterator	rbegin() const;
+		reverse_iterator		rend();
+		const_reverse_iterator	rend() const;
+		allocator_type			get_allocator() const;
 }
 
 #endif
