@@ -29,18 +29,18 @@ namespace ft
 	public:
 
 	//Typedef
-		typedef typename Allocator::reference			reference;
-		typedef typename Allocator::const_reference		const_reference;
-		typedef											iterator;
-		typedef											const_iterator;
-		typedef	size_t									size_type;
-		typedef	ptrdiff_t								difference_type;
-		typedef	T										value_type;
-		typedef	Allocator 								allocator_type;
-		typedef	typename Allocator::pointer				pointer;
-		typedef	typename Allocator::const_pointer		const_pointer
-		typedef	std::reverse_iterator<iterator>			reverse_iterator;
-		typedef	std::reverse_iterator<const_iterator>	const_reverse_iterator;
+		typedef typename Allocator::reference					reference;
+		typedef typename Allocator::const_reference				const_reference;
+		typedef	ft::random_access_iterator<value_type>			iterator; //add ft:: or not
+		typedef	ft::random_access_iterator<const value_type>	const_iterator;
+		typedef	size_t											size_type;
+		typedef	ptrdiff_t										difference_type;
+		typedef	T												value_type;
+		typedef	Allocator 										allocator_type;
+		typedef	typename Allocator::pointer						pointer;
+		typedef	typename Allocator::const_pointer				const_pointer
+		typedef	ft::reverse_iterator<iterator>					reverse_iterator;
+		typedef	ft::reverse_iterator<const_iterator>			const_reverse_iterator;
 
 	//Canonical form
 		explicit vector(const allocator_type& alloc = allocator_type());	
@@ -113,23 +113,52 @@ namespace ft
 
 //Relational operators
 	template <class T, class Allocator>
-	bool	operator==(const vector<T,Allocator>& x,
-						const vector<T,Allocator>& y);
+	bool	operator==(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
+	{
+		if (x.size() != y.size())
+			return (false);
+		
+		typename vector<T, Allocator>::const_iterator	xbegin = x.begin();
+		typename vector<T, Allocator>::const_iterator	xend = x.end();
+		typename vector<T, Allocator>::const_iterator	ybegin = y.begin();
+
+		for (; xbegin != xend; xbegin++, ybegin++)
+		{
+			if (xbegin != ybegin)
+				return (false);
+		}
+		return (true);
+	}
+
 	template <class T, class Allocator>
-	bool	operator<(const vector<T,Allocator>& x,
-						const vector<T,Allocator>& y);
+	bool	operator<(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
+	{
+		return (lexicographical_compare(x.begin(), x.end(), y.begin(), y.end()));
+	}
+
 	template <class T, class Allocator>
-	bool	operator!=(const vector<T,Allocator>& x,
-						const vector<T,Allocator>& y);
+	bool	operator!=(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
+	{
+		return (!(x == y));
+	}
+
 	template <class T, class Allocator>
-	bool	operator>(const vector<T,Allocator>& x,
-						const vector<T,Allocator>& y);
+	bool	operator>(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
+	{
+		return (y < x);
+	}
+
 	template <class T, class Allocator>
-	bool	operator>=(const vector<T,Allocator>& x,
-						const vector<T,Allocator>& y);
+	bool	operator>=(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
+	{
+		return (!(x < y));
+	}
+
 	template <class T, class Allocator>
-	bool	operator<=(const vector<T,Allocator>& x,
-						const vector<T,Allocator>& y);
+	bool	operator<=(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
+	{
+		return (!(y < x));
+	}
 
 //Algo non member
 	template <class T, class Allocator>
@@ -198,15 +227,62 @@ namespace ft
 	}
 
 //Iterators
-	iterator				begin();
-	const_iterator			begin() const;
-	iterator				end();
-	const_iterator			end() const;
-	reverse_iterator		rbegin();
-	const_reverse_iterator	rbegin() const;
-	reverse_iterator		rend();
-	const_reverse_iterator	rend() const;
-	allocator_type			get_allocator() const;
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::iterator	vector<T, Allocator>::begin()
+	{
+		return (this->_begin);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::const_iterator	vector<T, Allocator>::begin() const
+	{
+		return (this->_begin);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::iterator	vector<T, Allocator>::end()
+	{
+		return (this->_end);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::const_iterator	vector<T, Allocator>::end() const
+	{
+		return (this->_end);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::reverse_iterator	vector<T, Allocator>::rbegin()
+	{
+		return reverse_iterator(this->_end);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::const_reverse_iterator	vector<T, Allocator>::rbegin() const
+	{
+		return const_reverse_iterator(this->_end);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::reverse_iterator	vector<T, Allocator>::rend()
+	{
+		return reverse_iterator(this->_begin);
+	}
+
+	template <typename T, typename Allocator>
+	inline typename vector<T, Allocator>::const_reverse_iterator	vector<T, Allocator>::rend() const
+	{
+		return const_reverse_iterator(this->_begin);
+	}
+
+//Allocator
+	template <typename T, typename Allocator>
+	typename vector<T, Allocator>::allocator_type	
+		vector<T, Allocator>::get_allocator() const
+	{
+		allocator_type	alloc_copy(this->_alloc);
+		return (alloc_copy);
+	}
 
 //Capacity
 	template <typename T, typename Allocator>
@@ -268,25 +344,31 @@ namespace ft
 
 //Element access
 	template <typename T, typename Allocator>
-	reference	vector<T, Allocator>::operator[](size_type n)
+	inline typename vector<T, Allocator>::reference
+		vector<T, Allocator>::operator[](size_type n)
 	{
-		return (&(this->_begin + n));
+		return (*(this->_begin + n));
 	}
 
 	template <typename T, typename Allocator>
-	const_reference	vector<T, Allocator>::operator[](size_type n) const
+	inline typename vector<T, Allocator>::const_reference
+		vector<T, Allocator>::operator[](size_type n) const
 	{
-		return (&(this->_begin + n));
+		return (*(this->_begin + n));
 	}
 
 	template <typename T, typename Allocator>
-	reference	vector<T, Allocator>::at(size_type n)
+	inline typename vector<T, Allocator>::reference
+		vector<T, Allocator>::at(size_type n)
 	{
-		return (&(this->_begin + n));
+		if (n >= this->size())
+			throw out_of_range;
+		return (*(this->_begin + n));
 	}
 
 	template <typename T, typename Allocator>
-	const_reference	vector<T, Allocator>::at(size_type n) const
+	inline typename vector<T, Allocator>::const_reference
+		vector<T, Allocator>::at(size_type n) const
 	{
 		if (n >= this->size())
 			throw out_of_range;
@@ -294,59 +376,64 @@ namespace ft
 	}
 
 	template <typename T, typename Allocator>
-	reference	vector<T, Allocator>::front()
+	inline typename vector<T, Allocator>::reference
+		vector<T, Allocator>::front()
 	{
-		return (&this->_begin);
+		return (*this->_begin);
 	}
 
 	template <typename T, typename Allocator>
-	const_reference	vector<T, Allocator>::front() const
+	inline typename vector<T, Allocator>::const_reference
+		vector<T, Allocator>::front() const
 	{
-		return (&this->_begin);
+		return (*this->_begin);
 	}
 
 	template <typename T, typename Allocator>
-	reference	vector<T, Allocator>::back()
+	inline typename vector<T, Allocator>::reference
+		vector<T, Allocator>::back()
 	{
-		return (&this->_end);
+		return (*(this->_end - 1));
 	}
 
 	template <typename T, typename Allocator>
-	const_reference	back() vector<T, Allocator>::const
+	inline typename vector<T, Allocator>::const_reference
+		vector<T, Allocator>::back() const
 	{
-		return (&this->_begin);
+		return (*(this->_end - 1));
 	}
 
 //Modifiers
 	template <typename T, typename Allocator>
 	template <class InputIterator>
-	void	vector<T, Allocator>::assign(InputIterator first, InputIterator last)
+	inline void	vector<T, Allocator>::assign(InputIterator first, InputIterator last)
 	{
 		this->clear();
 		this->insert(this->_end, fisrt, last);
 	}
 
 	template <typename T, typename Allocator>
-	void	vector<T, Allocator>::assign(size_type n, const T& val)
+	inline void	vector<T, Allocator>::assign(size_type n, const T& val)
 	{
 		this->clear();
 		this->insert(this->_end, n, val); //or begin
 	}
 
 	template <typename T, typename Allocator>
-	void	vector<T, Allocator>::push_back(const T& val)
+	inline void	vector<T, Allocator>::push_back(const T& val)
 	{
 		this->insert(this->_end, val);
 	}
 
 	template <typename T, typename Allocator>
-	void	vector<T, Allocator>::pop_back()
+	inline void	vector<T, Allocator>::pop_back()
 	{
 		this->erase(this->_end - 1);
 	}
 
 	template <typename T, typename Allocator>
-	iterator	vector<T, Allocator>::insert(iterator position, const T& val)
+	inline typename vector<T, Allocator>::iterator
+		vector<T, Allocator>::insert(iterator position, const T& val)
 	{
 		insert(position, 1, val);
 		return (position);
@@ -367,7 +454,7 @@ namespace ft
 
 	template <typename T, typename Allocator>
 	template <class InputIterator>
-	void	vector<T, Allocator>::insert(iterator position,
+	void	vector<T, Allocator>::insert(typename vector<T, Allocator>::iterator position,
 						InputIterator first, InputIterator last)
 	{
 		size_type	n = (size_type)(last - first);
@@ -382,7 +469,8 @@ namespace ft
 	}
 
 	template <typename T, typename Allocator>
-	iterator	vector<T, Allocator>::erase(iterator position)
+	typename vector<T, Allocator>::iterator
+		vector<T, Allocator>::erase(typename vector<T, Allocator>::iterator position)
 	{
 		this->_alloc.destroy(position);
 		for (int i = 0; position + i + 1 != this->_end; i++)
@@ -394,7 +482,8 @@ namespace ft
 	}
 
 	template <typename T, typename Allocator>
-	iterator	vector<T, Allocator>::erase(iterator first, iterator last)
+	typename vector<T, Allocator>::iterator
+		vector<T, Allocator>::erase(iterator first, iterator last)
 	{
 		for (int i = 0; (first + i) != last; i++)
 		{
