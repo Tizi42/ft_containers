@@ -60,14 +60,117 @@ namespace ft
 /*  																	      */
 /* ************************************************************************** */
 
+	template<class T, T v>
+	struct integral_constant
+	{
+		static constexpr T value = v;
+		typedef T						value_type;
+		typedef integral_constant<T, v>	type;
+		constexpr operator value_type() const {return v;}; //noexcept
+	};
+
+	typedef integral_constant<bool, false>	false_type;
+	typedef integral_constant<bool, true>	true_type;
+
+// is_integral_base default
+	template <typename T>
+	struct is_integral_base : public false_type {};
+
+// is_integral_base's template specialization
+	template<> struct is_integral_base<bool> : public true_type {};
+	template<> struct is_integral_base<char> : public true_type {};
+	template<> struct is_integral_base<signed char> : public true_type {};
+	template<> struct is_integral_base<short int> : public true_type {};
+	template<> struct is_integral_base<int> : public true_type {};
+	template<> struct is_integral_base<long int> : public true_type {};
+	template<> struct is_integral_base<long long int> : public true_type {};
+	template<> struct is_integral_base<unsigned char> : public true_type {};
+	template<> struct is_integral_base<unsigned short int> : public true_type {};
+	template<> struct is_integral_base<unsigned int> : public true_type {};
+	template<> struct is_integral_base<unsigned long int> : public true_type {};
+	template<> struct is_integral_base<unsigned long long int> : public true_type {};
+
+	template <typename T>
+	struct is_integral : public is_integral_base<T> {};
+
 /* ************************************************************************** */
 /*                                                                            */
 /*                        		pair & make_pair							  */
 /*  																	      */
 /* ************************************************************************** */
 
+	template <class T1, class T2>
+	struct pair
+	{
+	public:
 
+		typedef T1	first_type;
+		typedef T2	second_type;
 
+		pair() : first(), second() {}
+
+		template<class U, class V>
+		pair (const pair<U,V>& pr) : first(pr.first), second(pr.second) {}
+
+		pair (const first_type& a, const second_type& b) : first(a), second(b) {}
+
+		~pair() {}
+
+		// note: implicitly declared ???
+		pair& operator=(const pair& pr)
+		{
+			this->first = pr.first;
+			this->second = pr.second;
+			return (*this);
+		}
+
+		first_type	first;
+		second_type	second;
+	};
+
+//pair's non member relational operators
+	template <class T1, class T2>
+	bool	operator==(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs)
+	{
+		return (lhs.first == rhs.first && lhs.second == rhs.second);
+	}
+
+	template <class T1, class T2>
+	bool	operator!=(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs)
+	{
+		return !(lhs == rhs);
+	}
+
+	template <class T1, class T2>
+	bool	operator<(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs)
+	{
+		return (lhs.first < rhs.first || (lhs.first == rhs.first && lhs.second < rhs.second));
+	}
+
+	template <class T1, class T2>
+	bool	operator<=(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs)
+	{
+		return !(rhs < lhs);
+	}
+
+	template <class T1, class T2>
+	bool	operator>(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs)
+	{
+		return (rhs < lhs);
+	}
+
+	template <class T1, class T2>
+	bool	operator>=(const pair<T1,T2>& lhs, const pair<T1,T2>& rhs)
+	{
+		return !(lhs < rhs);
+	}
+
+//make_pair
+	template <class T1, class T2>
+	pair<T1,T2>		make_pair (T1 x, T2 y)
+	{
+		return (pair<T1, T2>(x, y));
+	}
 
 }
 
