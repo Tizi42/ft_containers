@@ -1,37 +1,105 @@
 #ifndef FT_STACK_H
 # define FT_STACK_H
 
+# include "ft_vector.hpp"
+
 namespace ft
 {
-	template <class Container>
+	template <class T, class Container = ft::vector<T> >
 	class stack
 	{
-		friend bool operator==(const stack<Container>& x, const stack<Container>& y);
-		friend bool operator<(const stack<Container>& x, const stack<Container>& y);
-	
+
 	public:
-		typedef Container::value_type value_type;
-		typedef Container::size_type size_type;
+		typedef Container	container_type;
+		typedef T			value_type;
+		typedef size_t		size_type;
+
+	//constructor
+		explicit stack(const container_type& ctnr = container_type())
+			: c (ctnr) {}
+
+	//member funcs
+		bool empty() const
+		{
+			return (this->c.empty());
+		}
+
+		size_type size() const
+		{
+			return (this->c.size());
+		}
+
+		value_type& top()
+		{
+			return (this->c.back());
+		}
+
+		const value_type& top() const
+		{
+			return (this->c.back());
+		}
+
+		void push(const value_type& val)
+		{
+			return (c.push_back(val));
+		}
+
+		void pop()
+		{
+			return (this->c.pop_back());
+		}
+
+	//non-member funcs
+		friend bool operator==(const ft::stack<T, Container>& lhs,
+								const ft::stack<T, Container>& rhs)
+		{
+			return (lhs.c == rhs.c);
+		}
+
+		friend bool operator>=(const ft::stack<T, Container>& lhs,
+								const ft::stack<T, Container>& rhs)
+		{
+			return (lhs.c >= rhs.c);
+		}
+
+		friend bool operator<=(const ft::stack<T, Container>& lhs,
+								const ft::stack<T, Container>& rhs)
+		{
+			return (lhs.c <= rhs.c);
+		}
+
+		friend bool operator!=(const ft::stack<T, Container>& lhs,
+								const ft::stack<T, Container>& rhs)
+		{
+			return (lhs.c != rhs.c);
+		}
+
+		friend bool operator>(const ft::stack<T, Container>& lhs,
+								const ft::stack<T, Container>& rhs)
+		{
+			return (lhs.c > rhs.c);
+		}
+
+		friend bool operator<(const ft::stack<T, Container>& lhs,
+								const ft::stack<T, Container>& rhs)
+		{
+			return (lhs.c < rhs.c);
+		}
 
 	protected:
-		Container c;
-		public:
-		bool empty() const { return c.empty(); } size_type size() const { return c.size(); } value_type& top() { return c.back(); }
-		const value_type& top() const { return c.back(); } void push(const value_type& x) { c.push_back(x); } void pop() { c.pop_back(); }
-	};
+		Container	c;
+	
+	private:
+		stack(const stack& rhs) : c(other.c) {}
 
-	template <class Container>
-	bool operator==(const stack<Container>& x, const stack<Container>& y)
-	{
-		return (x.c == y.c);
-	}
+		~stack(void) {}
 
-	template <class Container>
-	bool operator<(const stack<Container>& x, const stack<Container>& y)
-	{
-		return (x.c < y.c);
-	}
-
+		stack& operator=(const stack& rhs)
+		{
+			c = rhs.c;
+			return *this;
+		}
+	}; //class stack
 } //namespace ft
 
 #endif
