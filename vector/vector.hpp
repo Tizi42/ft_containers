@@ -64,12 +64,18 @@ namespace ft
 		vector(InputIterator first, InputIterator last,
 				const allocator_type& alloc = allocator_type())
 		{
+			difference_type	n = ft::distance(first, last);
+
 			this->_alloc = alloc;
 			this->_begin = this->_alloc.allocate(n);
 			this->_end = this->_begin;
 			this->capacity = n;
 
-			this->assign(first, last);
+			while (first != last)
+			{
+				this->_alloc.constrcut(this->_end, *(first++));
+				this->_end++;
+			}
 		}
 
 		vector(const vector& x)
@@ -83,9 +89,10 @@ namespace ft
 			this->_alloc.deallocate(this->_begin, this->_capacity);
 		}
 
-		vector<T, Allocator>& operator=(const vector& x)
+		vector<T, Allocator>& operator=(const vector& rhs)
 		{
-			this->assign(x.begin(), x.end());
+			if (this != &rhs)
+				this->assign(x.begin(), x.end());
 			return (*this);
 		}
 
@@ -177,14 +184,19 @@ namespace ft
 		void	reserve(size_type n)
 		{
 			if (n > this->max_size())
-				throw length_error;
+				throw std::length_error;
 			else if (n <= this->_capacity)
 				return ;
 			
-			pointer old_begin = this->_begin;
+			pointer	old_begin = this->_begin;
+
 			this->_begin = this->_alloc.allocate(n);
-			for (int i = 0; old_begin != this->_end; i++, old_begin++)
-				*(this->_begin + i) =  *old_begin;
+			for (int i = 0; old_begin != this->_end; i++)
+			{
+				this->_alloc.construct(this->_begin + i, *(old_begin + i));
+				this->_alloc.destroy(old_begin + i);
+			}
+			this->_alloc.deallocate(old_begin, this->_capacity);
 			this->_end = this->_begin + i;
 			this->_capacity = n;
 		}
@@ -203,14 +215,14 @@ namespace ft
 		reference		at(size_type n)
 		{
 			if (n >= this->size())
-				throw out_of_range;
+				throw std::out_of_range("vector: out of range");
 			return (*(this->_begin + n));
 		}
 
 		const_reference	at(size_type n) const
 		{
 			if (n >= this->size())
-				throw out_of_range;
+				throw std::out_of_range("vector: out of range");
 			return (&(this->_begin + n));
 		}
 
@@ -321,10 +333,10 @@ namespace ft
 		
 		void	swap(vector<T, Allocator>& x)
 		{
-			std::swap(&this->_begin, &x._begin);
-			std::swap(&this->_end, &x._end);
-			std::swap(&this->_alloc, &x._alloc);
-			std::swap(&this->_capacity, &x._capacity);
+			std::swap(this->_begin, x._begin);
+			std::swap(this->_end, x._end);
+			std::swap(this->_alloc, x._alloc);
+			std::swap(this->_capacity, x._capacity);
 		}
 
 		void	clear()

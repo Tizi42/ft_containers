@@ -36,6 +36,7 @@ namespace ft
 		class value_compare
 		{
 			friend class map;
+		
 		protected:
 			value_compare(Compare c) : comp(c) {}
 			Compare comp;
@@ -50,7 +51,6 @@ namespace ft
 				return comp(x.first, y.first);
 			}
 		}; //class value_compare
-
 
 	//allocation/deallocation
 		explicit map (const key_compare& comp = key_compare(),
@@ -77,15 +77,15 @@ namespace ft
 
 		}
 
-		map& operator= (const map& x)
+		map& operator=(const map& x)
 		{
 
 		}
 
 	//observers
-		key_compare key_comp() const;
-		value_compare value_comp() const;
-	
+		key_compare key_comp() const { return (key_compare()); }
+		value_compare value_comp() const { return (value_compare(key_compare())); }
+
 	//iterators
 		iterator begin();
 		const_iterator begin() const;
