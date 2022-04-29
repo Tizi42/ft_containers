@@ -63,10 +63,12 @@ namespace ft
 	template<class T, T v>
 	struct integral_constant
 	{
-		static constexpr T value = v;
-		typedef T						value_type;
-		typedef integral_constant<T, v>	type;
-		constexpr operator value_type() const {return v;}; //noexcept
+		static const T value = v;
+
+		typedef T	value_type;
+		typedef integral_constant<T, v>		type;
+	
+		operator value_type() const {return v;}; //noexcept, constexpr
 	};
 
 	typedef integral_constant<bool, false>	false_type;

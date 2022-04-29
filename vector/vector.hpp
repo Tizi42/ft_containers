@@ -46,7 +46,7 @@ namespace ft
 			this->_alloc = alloc;
 			this->_begin = 0;
 			this->_end = 0;
-			this->capacity = 0;
+			this->_capacity = 0;
 		}
 
 		explicit  vector(size_type n, const value_type& val = value_type(),
@@ -55,7 +55,7 @@ namespace ft
 			this->_alloc = alloc;
 			this->_begin = this->_alloc.allocate(n);
 			this->_end = this->_begin;
-			this->capacity = n;
+			this->_capacity = n;
 			while (n--)
 			{
 				this->_alloc.construct(this->_end, val);
@@ -72,7 +72,7 @@ namespace ft
 			this->_alloc = alloc;
 			this->_begin = this->_alloc.allocate(n);
 			this->_end = this->_begin;
-			this->capacity = n;
+			this->_capacity = n;
 
 			while (first != last)
 			{
@@ -287,10 +287,10 @@ namespace ft
 			iterator new_pos = position + n;
 
 			this->reserve(this->size() + n);
-			for (int i = 0; position + i != this->_end; i++, new_pos++)
+			for (int i = 0; position + i != this->end(); i++, new_pos++)
 				*new_pos = *(position + i);
-			this->end = new_pos;		
-			for (int i = 0; i < n; i++)
+			this->_end = (pointer)new_pos;
+			for (size_type i = 0; i < n; i++)
 				*(position + i) = val;
 		}
 
@@ -303,9 +303,9 @@ namespace ft
 			iterator	new_pos = position + n;
 
 			this->reserve(this->size() + n);
-			for (int i = 0; position + i != this->end; i++, new_pos++)
+			for (int i = 0; position + i != this->end(); i++, new_pos++)
 				*new_pos = *(position + i);
-			this->end = new_pos;
+			this->_end = (pointer)new_pos;
 			for (; first != last; position++, first++)
 				*position = *first;
 		}
@@ -313,7 +313,7 @@ namespace ft
 		iterator	erase(iterator position)
 		{
 			this->_alloc.destroy(position);
-			for (int i = 0; position + i + 1 != this->_end; i++)
+			for (int i = 0; position + i + 1 != this->end(); i++)
 			{
 				*(position + i) = *(position + i + 1);
 			}
@@ -329,7 +329,7 @@ namespace ft
 			{
 				this->_alloc.destroy(first + i);
 			}
-			for (i = 0; last != this->_end; i++, last++)
+			for (i = 0; last != this->end(); i++, last++)
 			{
 				*(first + i) = *last;
 			}

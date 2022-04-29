@@ -88,17 +88,7 @@ namespace ft
 
 	protected:
 		Container	c;
-	
-	private:
-		stack(const stack& rhs) : c(rhs.c) {}
 
-		~stack(void) {}
-
-		stack& operator=(const stack& rhs)
-		{
-			c = rhs.c;
-			return *this;
-		}
 	}; //class stack
 } //namespace ft
 
