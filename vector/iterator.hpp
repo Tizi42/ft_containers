@@ -14,9 +14,33 @@
 # define FT_ITERATOR_H
 
 # include <cstddef>
+# include "iterator.hpp"
 
 namespace ft
 {
+/* ************************************************************************** */
+/*                                                                            */
+/*                         		iterator			  		 				  */
+/*  																	      */
+/* ************************************************************************** */
+
+	template <class Category, class T, class Distance = ptrdiff_t,
+				class Pointer = T*, class Reference = T&>
+	struct iterator
+	{
+		typedef T			value_type;
+		typedef Distance	difference_type;
+		typedef Pointer		pointer;
+		typedef Reference	reference;
+		typedef Category	iterator_category;
+	};
+
+	struct input_iterator_tag { };
+	struct output_iterator_tag { };
+	struct forward_iterator_tag : public input_iterator_tag { };
+	struct bidirectional_iterator_tag : public forward_iterator_tag { };
+	struct random_access_iterator_tag : public bidirectional_iterator_tag { };
+
 /* ************************************************************************** */
 /*                                                                            */
 /*                            iterator_traits				 				  */
@@ -66,36 +90,18 @@ namespace ft
 
 /* ************************************************************************** */
 /*                                                                            */
-/*                         		iterator			  		 				  */
-/*  																	      */
-/* ************************************************************************** */
-
-	template <class Category, class T, class Distance = ptrdiff_t,
-				class Pointer = T*, class Reference = T&>
-	struct iterator
-	{
-		typedef T			value_type;
-		typedef Distance	difference_type;
-		typedef Pointer		pointer;
-		typedef Reference	reference;
-		typedef Category	iterator_category;
-	};
-
-	struct input_iterator_tag { };
-	struct output_iterator_tag { };
-	struct forward_iterator_tag : public input_iterator_tag { };
-	struct bidirectional_iterator_tag : public forward_iterator_tag { };
-	struct random_access_iterator_tag : public bidirectional_iterator_tag { };
-
-/* ************************************************************************** */
-/*                                                                            */
 /*                   	Vector_iterator			  	 				  */
 /*  																	      */
 /* ************************************************************************** */
 
 	template <typename T>
-	class Vector_iterator : ft::iterator<ft::random_access_iterator_tag, T>
+	class Vector_iterator : public ft::iterator<ft::random_access_iterator_tag, T>
 	{
+		typedef ft::iterator<ft::random_access_iterator_tag, T>		base_iterator;
+		typedef	typename base_iterator::pointer						pointer;
+		typedef	typename base_iterator::reference					reference;
+		typedef	typename base_iterator::difference_type				difference_type;
+
 
 	public:
 

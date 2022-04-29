@@ -1,7 +1,7 @@
 #ifndef FT_STACK_H
 # define FT_STACK_H
 
-# include "ft_vector.hpp"
+# include "vector.hpp"
 
 namespace ft
 {
@@ -90,7 +90,7 @@ namespace ft
 		Container	c;
 	
 	private:
-		stack(const stack& rhs) : c(other.c) {}
+		stack(const stack& rhs) : c(rhs.c) {}
 
 		~stack(void) {}
 

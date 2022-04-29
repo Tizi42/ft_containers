@@ -15,6 +15,9 @@
 
 # include <memory>
 # include <algorithm>
+# include <stdexcept>
+# include "iterator.hpp"
+# include "tools.hpp"
 
 namespace ft 
 {	
@@ -26,14 +29,14 @@ namespace ft
 	//Typedef
 		typedef typename Allocator::reference					reference;
 		typedef typename Allocator::const_reference				const_reference;
+		typedef	T												value_type;
 		typedef	Vector_iterator<value_type>						iterator;
 		typedef	Vector_iterator<const value_type>				const_iterator;
 		typedef	size_t											size_type;
 		typedef	ptrdiff_t										difference_type;
-		typedef	T												value_type;
 		typedef	Allocator 										allocator_type;
 		typedef	typename Allocator::pointer						pointer;
-		typedef	typename Allocator::const_pointer				const_pointer
+		typedef	typename Allocator::const_pointer				const_pointer;
 		typedef	ft::reverse_iterator<iterator>					reverse_iterator;
 		typedef	ft::reverse_iterator<const_iterator>			const_reverse_iterator;
 
@@ -92,7 +95,7 @@ namespace ft
 		vector<T, Allocator>& operator=(const vector& rhs)
 		{
 			if (this != &rhs)
-				this->assign(x.begin(), x.end());
+				this->assign(rhs.begin(), rhs.end());
 			return (*this);
 		}
 
@@ -184,14 +187,15 @@ namespace ft
 		void	reserve(size_type n)
 		{
 			if (n > this->max_size())
-				throw std::length_error;
+				throw std::length_error("vector: length error");
 			else if (n <= this->_capacity)
 				return ;
 			
 			pointer	old_begin = this->_begin;
 
 			this->_begin = this->_alloc.allocate(n);
-			for (int i = 0; old_begin != this->_end; i++)
+			int	i = 0;
+			for ( ; old_begin != this->_end; i++)
 			{
 				this->_alloc.construct(this->_begin + i, *(old_begin + i));
 				this->_alloc.destroy(old_begin + i);
@@ -251,7 +255,7 @@ namespace ft
 		void	assign(InputIterator first, InputIterator last)
 		{
 			this->clear();
-			this->insert(this->_end, fisrt, last);
+			this->insert(this->_end, first, last);
 		}
 
 		void	assign(size_type n, const T& val)
@@ -292,7 +296,7 @@ namespace ft
 
 		
 		template <class InputIterator>
-		void	insert(typename iterator position,
+		void	insert(iterator position,
 							InputIterator first, InputIterator last)
 		{
 			size_type	n = (size_type)(last - first);
@@ -306,7 +310,7 @@ namespace ft
 				*position = *first;
 		}
 
-		iterator	erase(typename iterator position)
+		iterator	erase(iterator position)
 		{
 			this->_alloc.destroy(position);
 			for (int i = 0; position + i + 1 != this->_end; i++)
@@ -319,11 +323,13 @@ namespace ft
 
 		iterator	erase(iterator first, iterator last)
 		{
-			for (int i = 0; (first + i) != last; i++)
+			int	i = 0;
+
+			for (i = 0; (first + i) != last; i++)
 			{
-				this->_alloc.destroy(fisrt + i);
+				this->_alloc.destroy(first + i);
 			}
-			for (int i = 0; last != this->_end; i++, last++)
+			for (i = 0; last != this->_end; i++, last++)
 			{
 				*(first + i) = *last;
 			}
