@@ -27,18 +27,18 @@ namespace ft
 	public:
 
 	//Typedef
-		typedef typename Allocator::reference					reference;
-		typedef typename Allocator::const_reference				const_reference;
-		typedef	T												value_type;
-		typedef	Vector_iterator<value_type>						iterator;
-		typedef	Vector_iterator<const value_type>				const_iterator;
-		typedef	size_t											size_type;
-		typedef	ptrdiff_t										difference_type;
-		typedef	Allocator 										allocator_type;
-		typedef	typename Allocator::pointer						pointer;
-		typedef	typename Allocator::const_pointer				const_pointer;
-		typedef	ft::reverse_iterator<iterator>					reverse_iterator;
-		typedef	ft::reverse_iterator<const_iterator>			const_reverse_iterator;
+		typedef typename Allocator::reference			reference;
+		typedef typename Allocator::const_reference		const_reference;
+		typedef	T										value_type;
+		typedef	Vector_iterator<value_type>				iterator;
+		typedef	Vector_iterator<const value_type>		const_iterator;
+		typedef	size_t									size_type;
+		typedef	ptrdiff_t								difference_type;
+		typedef	Allocator 								allocator_type;
+		typedef	typename Allocator::pointer				pointer;
+		typedef	typename Allocator::const_pointer		const_pointer;
+		typedef	ft::reverse_iterator<iterator>			reverse_iterator;
+		typedef	ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
 	//Canonical form
 		explicit vector(const allocator_type& alloc = allocator_type())
