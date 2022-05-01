@@ -217,24 +217,65 @@ namespace ft
 			return (this->find(x) != this->end());
 		}
 	
-		iterator		lower_bound(const key_type& x)
+		iterator	lower_bound(const key_type& x)
 		{
-			return (this->_tree.lower_bound(ft::make_pair(x, mapped_type())));
+			iterator	begin = this->begin();
+			iterator	end = this->end();
+			value_type	val = ft::make_pair(x, mapped_type());
+	
+			while (begin != end)
+			{
+				if (_comp(begin->val, val))
+					return (begin);
+				begin++;
+			}
+			return (begin);
 		}
 
 		const_iterator	lower_bound(const key_type& x) const
 		{
-			return (this->_tree.lower_bound(ft::make_pair(x, mapped_type())));
+			const_iterator	begin = this->begin();
+			const_iterator	end = this->end();
+			value_type &	val = ft::make_pair(x, mapped_type());
+	
+			while (begin != end)
+			{
+				if (!(_comp(begin->val, val)))
+					return (begin);
+				begin++;
+			}
+			return (begin);
 		}
 
 		iterator		upper_bound(const key_type& x)
 		{
-			return (this->_tree.upper_bound(ft::make_pair(x, mapped_type())));
+			iterator	begin = this->begin();
+			iterator	end = this->end();
+			value_type	val = ft::make_pair(x, mapped_type());
+	
+			while (begin != end)
+			{
+				if (_comp(val, begin->val))
+					return (begin);
+				begin++;
+			}
+			return (begin);
 		}
 
 		const_iterator	upper_bound(const key_type& x) const
 		{
-			return (this->_tree.upper_bound(ft::make_pair(x, mapped_type())));
+			const_iterator	begin = this->begin();
+			const_iterator	end = this->end();
+			value_type	val = ft::make_pair(x, mapped_type());
+	
+			while (begin != end)
+			{
+				if (_comp(val, begin->val))
+					return (begin);
+				begin++;
+			}
+			return (begin);
+			
 		}
 
 		pair<iterator, iterator> 				equal_range(const key_type& x)

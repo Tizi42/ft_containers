@@ -100,10 +100,12 @@ namespace ft
 	{
 
 	public:
-		typedef ft::iterator<ft::random_access_iterator_tag, T>		base_iterator;
-		typedef	typename base_iterator::pointer						pointer;
-		typedef	typename base_iterator::reference					reference;
-		typedef	typename base_iterator::difference_type				difference_type;
+		typedef ft::iterator<ft::random_access_iterator_tag, T>			Iterator;
+		typedef typename iterator_traits<Iterator>::difference_type		difference_type;
+		typedef typename iterator_traits<Iterator>::value_type			value_type;
+		typedef typename iterator_traits<Iterator>::pointer				pointer;
+		typedef typename iterator_traits<Iterator>::reference			reference;
+		typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
 
 	//canonical
 		Vector_iterator(void) : _base() {}
@@ -450,10 +452,12 @@ namespace ft
 	{
 
 	public:
-		typedef ft::iterator<ft::random_access_iterator_tag, T>		base_iterator;
-		typedef	typename base_iterator::pointer						pointer;
-		typedef	typename base_iterator::reference					reference;
-		typedef	typename base_iterator::difference_type				difference_type;
+		typedef ft::iterator<ft::bidirectional_iterator_tag, T>			Iterator;
+		typedef typename iterator_traits<Iterator>::difference_type		difference_type;
+		typedef typename iterator_traits<Iterator>::value_type			value_type;
+		typedef typename iterator_traits<Iterator>::pointer				pointer;
+		typedef typename iterator_traits<Iterator>::reference			reference;
+		typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
 
 	//canonical
 		Tree_iterator(void) : _base() {}
@@ -464,20 +468,14 @@ namespace ft
 
 		Tree_iterator &operator=(const Tree_iterator& rhs)
 		{
-			if (this == &rhs)
-				return (*this);
-			this->_base = rhs._base;
+			if (this != &rhs)
+				this->_base = rhs._base;
 			return (*this);
 		}
 
 		~Tree_iterator() {}
 
 	//member funcs
-		pointer base() const 
-		{
-			return (this->_base);
-		}
-
 		reference operator*(void) const
 		{
 			return (*_base);
@@ -490,7 +488,7 @@ namespace ft
 
 		Tree_iterator& operator++(void)
 		{
-			_base++;
+			this = this->inOrderSuccessor();
 			return (*this);
 		}
 
@@ -503,7 +501,7 @@ namespace ft
 
 		Tree_iterator& operator--(void)
 		{
-			_base--;
+			this = this->inOrderPredecessor();
 			return (*this);
 		}
 
@@ -512,28 +510,6 @@ namespace ft
 			Tree_iterator it(*this);
 			_base--;
 			return (it);
-		}
-
-		Tree_iterator operator+(difference_type n) const
-		{
-			return (_base + n);
-		}
-
-		Tree_iterator operator-(difference_type n) const
-		{
-			return (_base - n);
-		}
-
-		Tree_iterator& operator+=(difference_type n)
-		{
-			_base += n;
-			return (*this);
-		}
-
-		Tree_iterator& operator-=(difference_type n)
-		{
-			_base -= n;
-			return (*this);
 		}
 
 		operator Tree_iterator<const T> () const
@@ -559,55 +535,6 @@ namespace ft
 				const Tree_iterator<Iterator2> rhs)
 	{
 		return (lhs.base() != rhs.base());
-	}
-
-	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator<(const Tree_iterator<Iterator1> lhs,
-				const Tree_iterator<Iterator2> rhs)
-	{
-		return (lhs.base() < rhs.base());
-	}
-
-	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator>(const Tree_iterator<Iterator1> lhs,
-				const Tree_iterator<Iterator2> rhs)
-	{
-		return (lhs.base() > rhs.base());
-	}
-
-	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator<=(const Tree_iterator<Iterator1> lhs,
-				const Tree_iterator<Iterator2> rhs)
-	{
-		return (lhs.base() <= rhs.base());
-	}
-
-	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator>=(const Tree_iterator<Iterator1> lhs,
-					const Tree_iterator<Iterator2> rhs)
-	{
-		return (lhs.base() >= rhs.base());
-	}
-
-	template<typename T>
-	Tree_iterator<T>
-		operator+(
-				typename Tree_iterator<T>::difference_type n,
-				Tree_iterator<T>& it)
-		{
-			return (&(*it) + n);
-		}
-
-	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator-(const Tree_iterator<Iterator1> lhs,
-				const Tree_iterator<Iterator2> rhs)
-	{
-		return (lhs.base() - rhs.base());
 	}
 
 } //namesapce ft

@@ -12,7 +12,7 @@ namespace ft
 /*  																	      */
 /* ************************************************************************** */
 
-	template <class T, class Compare>
+	template <class T>
 	struct Node
 	{
 		T		val;
@@ -37,6 +37,54 @@ namespace ft
 			}
 			return (*this);
 		}
+
+		Node *	inOrderSuccessor()
+		{
+			Node *nd = this;
+
+			if (!nd)
+				return 0;
+			if (nd->right)
+			{
+				nd = nd->right;
+				while (nd->left)
+					nd = nd->left;
+				return (nd);
+			}
+
+			Node * p = nd->parent;
+
+			while (p && p->right == nd)
+			{
+				nd = p;
+				p = p->parent;
+			}
+			return (p);
+		}
+
+		Node *	inOrderPredecessor()
+		{
+			Node *nd = this;
+
+			if (!nd)
+				return 0;
+			if (nd->left)
+			{
+				nd = nd->left;
+				while (nd->right)
+					nd = nd->right;
+				return (nd);
+			}
+
+			Node * p = nd->parent;
+
+			while (p && p->left == nd)
+			{
+				nd = p;
+				p = p->parent;
+			}
+			return (p);
+		}
 	};
 
 /* ************************************************************************** */
@@ -52,8 +100,8 @@ namespace ft
 	public:
 		typedef T										value_type;
 		typedef Node<T>									node;
-		typedef Tree_iterator<T> 						iterator;
-		typedef Tree_iterator<const T>					const_iterator;
+		typedef Tree_iterator<node> 					iterator;
+		typedef Tree_iterator<const node>				const_iterator;
 		typedef ft::reverse_iterator<iterator>			reverse_iterator;
 		typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
@@ -65,23 +113,27 @@ namespace ft
 			this->_leftmost = this->_root;
 		}
 
-		Btree(const Btree& rhs) : _size(rhs._size), _nodeAlloc(rhs._alloc),
-								/*	_root(rhs._root), _rightmost(rhs._rightmost),
-									_leftmost(_leftmost) */
+		Btree(const Btree& rhs) : _size(rhs._size),
+								 _nodeAlloc(rhs._nodeAlloc),
+								 _comp(rhs._comp)
 		{
-			//deep copy needed here
+			this->_root = _copyNodeRecur(rhs._root);
 		}
 
 		~Btree
 		{
-
+			this->clear();
 		}
 
 		Btree &	operator=(const Btree & rhs)
 		{
 			if (this != &rhs)
 			{
-				//deep copy needed here
+				this->clear();
+				this->_size = rhs._size;
+				this->_nodeAlloc = rhs._nodeAlloc;
+				this->_comp = rhs._comp;
+				this->_root = _copyNodeRecur(rhs._root);
 			}
 			return (*this);
 		}
@@ -104,26 +156,19 @@ namespace ft
 	//insertion
 		pair<iterator, bool> insert(const value_type& x)
 		{
-			iterator it = this->lower_bound(x);
+			node *		ret;
+			size_type	tmp;
 
-			if (_comp(*it, x) )
-			{
-
-				return ft::make_pair(, true);
-			}
-			return ft::make_pair(it, false);
+			tmp = _size;
+			ret = _insert(_root, x);
+			return (ft::make_pair((iterator(ret), _size != tmp)));
 		}
 
 		iterator insert(iterator position, const value_type& x)
 		{
-			iterator it = this->lower_bound(x);
-
-			if (*it != x)
-			{
-
-				
-			}
-			return it;
+			if (position && (!position->parent || _comp(x, position->parent->val)))
+				return iterator(_insert(&*position, x));
+			return iterator(_insert(_root, x));
 		}
 
 		template <class InputIterator>
@@ -136,94 +181,99 @@ namespace ft
 	//deletion
 		void erase(iterator position)
 		{
-			
+			_erase(_root, position->val);
 		}
 
 		size_type erase(const value_type& x)
 		{
-			
+			size_type	tmp = _size;
+
+			_erase(_root, x);
+			return (tmp - _size);
 		}
 
 		void erase(iterator first, iterator last)
 		{
-			
+			while (first != last)
+			{
+				this->erase(_root, (first->val);
+				first++;
+			}
 		}
 
 	//other modifiers
-		void swap(map<Key,T,Compare,Allocator>& rhs)
+		void swap(Btree& rhs)
 		{
-			
+			if (this != &rhs)
+			{
+				std::swap(this->_root = rhs._root);
+				std::swap(this->_size = rhs._size);
+			}
 		}
 
 		void clear()
 		{
-			
+			_clearNodeRecur(_root);
 		}
 
 	//operations
 		iterator		find(const value_type& x)
 		{
-			
+			node * ret = _find(_root, x);
+	
+			if (!ret)
+				return (this->end());
+			return (iterator(ret));
 		}
 
 		const_iterator	find(const value_type& x) const
 		{
-			
-		}
+			node * ret = _find(_root, x);
 	
-		iterator		lower_bound(const value_type& x)
-		{
-			
-		}
-
-		const_iterator	lower_bound(const value_type& x) const
-		{
-		}
-
-		iterator		upper_bound(const value_type& x)
-		{
-			
-		}
-
-		const_iterator	upper_bound(const value_type& x) const
-		{
+			if (!ret)
+				return (this->end());
+			return (const_iterator(ret));
 		}
 
 	//relational operations
-		friend bool operator==(const map<Key,T,Compare,Allocator>& x,
-						const map<Key,T,Compare,Allocator>& y)
+		friend bool operator==(const Btree<T, Compare, NodeAlloc>& x,
+						const Btree<T, Compare, NodeAlloc>& y)
 		{
-			return (x._tree == y._tree);
+			if (x._size == y._size)
+			{
+				return (ft::equal(x.begin(), x.end(), y.begin()));
+			}
+			return false;
 		}
 
-		friend bool operator!=(const map<Key,T,Compare,Allocator>& x,
-						const map<Key,T,Compare,Allocator>& y)
+		friend bool operator!=(const Btree<T, Compare, NodeAlloc>& x,
+						const Btree<T, Compare, NodeAlloc>& y)
 		{
-			return (x._tree == y._tree);
+			return !(x == y);
 		}
 
-		friend bool operator<(const map<Key,T,Compare,Allocator>& x,
-						const map<Key,T,Compare,Allocator>& y)
+		friend bool operator<(const Btree<T, Compare, NodeAlloc>& x,
+						const Btree<T, Compare, NodeAlloc>& y)
 		{
-			return (x._tree < y._tree);
+			return std::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
 		}
 
-		friend bool operator>(const map<Key,T,Compare,Allocator>& x,
-						const map<Key,T,Compare,Allocator>& y)
+		friend bool operator>(const Btree<T, Compare, NodeAlloc>& x,
+						const Btree<T, Compare, NodeAlloc>& y)
 		{
-			return (x._tree > y._tree);
+			return (y < x);
 		}
 
-		friend bool operator>=(const map<Key,T,Compare,Allocator>& x,
-						const map<Key,T,Compare,Allocator>& y)
+		friend bool operator>=(const Btree<T, Compare, NodeAlloc>& x,
+						const Btree<T, Compare, NodeAlloc>& y)
 		{
-			return (x._tree >= y._tree);
+			return !(x < y);
 		}
 
-		friend bool operator<=(const map<Key,T,Compare,Allocator>& x,
-						const map<Key,T,Compare,Allocator>& y)
+		friend bool operator<=(const Btree<T, Compare, NodeAlloc>& x,
+						const Btree<T, Compare, NodeAlloc>& y)
 		{
-			return (x._tree <= y._tree);
+			return !(y < x);
 		}
 
 	private:
@@ -232,12 +282,25 @@ namespace ft
 		NodeAlloc	_nodeAlloc;
 		Compare		_comp;
 
-		iterator	_insert(node * root, node * nd)
+		node*	_insert(node * root, const value_type& val, node * parent = 0)
 		{
-
+			if (!root)
+			{
+				_size++;
+				root = _createNode(val, parent);
+				if (parent && _comp(val, parent->val))
+					parent->left = root;
+				else if (parent)
+					parent->right = root;
+			}
+			else if (_comp(val, root->val))
+				return (_insert(root->left, val, root));
+			else if (_comp(root->val, val))
+				return (_insert(root->right, val, root));
+			return (root);
 		}
 
-		node*	_erase(node * root, value_type val)
+		node*	_erase(node * root, const value_type& val)
 		{
 			node * tmp;
 
@@ -264,24 +327,36 @@ namespace ft
 					root = root->right;
 				if (root)
 					root->parent = tmp->parent;
-				_nodeAlloc.destroy(tmp);
-				_nodeAlloc.deallocate(tmp);
-				tmp = 0;
-				_size--;
+				_clearNode(tmp);
 			}
 			return root;
 		}
 
-		node *	_leftmost()
+		node *	_find(node * root, const value_type& val) const
+		{
+			if (!root)
+				return 0;
+			if (_comp(val, root->val))
+				return (_find(root->left, val));
+			else if (_comp(root->val, val))
+				return (_find(root->right, val));
+			else
+				return root;
+		}
+
+		node *	_leftmost() const
 		{
 			node * ret = _root;
 
-			while (ret)
-				ret = ret->left;
+			if (ret)
+			{
+				while (ret->left)
+					ret = ret->left;
+			}
 			return (ret);
 		}
 
-		node *	_rightmost()
+		node *	_rightmost() const
 		{
 			node * ret = _root;
 
@@ -290,6 +365,46 @@ namespace ft
 			return (ret);
 		}
 
+		node *	_createNode(const value_type& val, node * parent,
+									node *left = 0, node *right = 0)
+		{
+			node *	ret;
+
+			ret = _nodeAlloc.allocate(1);
+			_nodeAlloc.construct(ret, node(val, parent, left, right));
+			return (ret);
+		}
+
+		node *	_copyNodeRecur(node *root, node * parent = 0)
+		{
+			node * cp = 0;
+
+			if (root)
+			{
+				cp = _createNode(root->val, parent,
+								_copyNodeRecur(cp->left, cp),
+								_copyNodeRecur(cp->right, cp));
+			}
+			return cp;
+		}
+
+		void	_clearNode(node * nd)
+		{
+			_nodeAlloc.destroy(nd);
+			_nodeAlloc.deallocate(nd, 1);
+			nd = 0;
+			_size--;
+		}
+
+		void	_clearNodeRecur(node * root)
+		{
+			if (root->left)
+				_clearNodeRecur(root->left);
+			if (root->right)
+				_clearNodeRecur(root->right);
+			if (root != this->end())
+				_clearNode(root);
+		}
 	}; //classe Btree
 
 } //namespace ft
