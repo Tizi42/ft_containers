@@ -488,27 +488,27 @@ namespace ft
 
 		Tree_iterator& operator++(void)
 		{
-			this = this->inOrderSuccessor();
+			_base = _base->inOrderSuccessor();
 			return (*this);
 		}
 
 		Tree_iterator operator++(int)
 		{
 			Tree_iterator it(*this);
-			_base++;
+			operator++();
 			return (it);
 		}
 
 		Tree_iterator& operator--(void)
 		{
-			this = this->inOrderPredecessor();
+			_base = _base->inOrderPredecessor();
 			return (*this);
 		}
 
 		Tree_iterator operator--(int)
 		{
 			Tree_iterator it(*this);
-			_base--;
+			operator--();
 			return (it);
 		}
 

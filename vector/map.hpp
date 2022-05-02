@@ -78,7 +78,7 @@ namespace ft
 			this->_tree.insert(first, last);
 		}
 
-		map (const map& rhs) : _alloc(rhs._alloc), _comp(rhs._comp),
+		map (const map& rhs) : _comp(rhs._comp), _alloc(rhs._alloc),
 								_tree(rhs._tree)
 		{}
 

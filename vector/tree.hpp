@@ -119,8 +119,8 @@ namespace ft
 		{}
 
 		Btree(const Btree& rhs) : _size(rhs._size),
-								 _nodeAlloc(rhs._nodeAlloc),
-								 _comp(rhs._comp)
+								 _comp(rhs._comp),
+								  _nodeAlloc(rhs._nodeAlloc)
 		{
 			this->_root = _copyNodeRecur(rhs._root);
 		}
@@ -205,7 +205,7 @@ namespace ft
 	//deletion
 		void erase(iterator position)
 		{
-			_erase(_root, position->val);
+			_erase(_root, *position);
 		}
 
 		size_type erase(const value_type& x)
@@ -342,8 +342,18 @@ namespace ft
 				tmp = root->right;
 				while (tmp->left)
 					tmp = tmp->left;
-				root->val = tmp->val;
-				root->right = erase(root->right, tmp->val);
+
+				node * replace = _createNode(tmp->val, root->parent, root->left,
+												_erase(root->right, tmp->val));
+				root->left->parent = replace;
+				root->right->parent = replace;
+				if (root->parent && _comp(root->parent->val, root->val))
+					root->parent->right = replace;
+				else if (root->parent)
+					root->parent->left = replace;
+				else
+					_root = replace;
+				_clearNode(root);
 			}
 			else
 			{
@@ -354,7 +364,15 @@ namespace ft
 					root = root->right;
 				if (root)
 					root->parent = tmp->parent;
-				_clearNode(tmp); //parent's left or right need to set as 0 ???
+
+				if (tmp->parent && _comp(tmp->parent->val, tmp->val))
+					tmp->parent->right = root;
+				else if (tmp->parent)
+					tmp->parent->left = root;
+				else
+					_root = root;
+
+				_clearNode(tmp);
 			}
 			return root;
 		}
@@ -412,8 +430,8 @@ namespace ft
 			if (root)
 			{
 				cp = _createNode(root->val, parent,
-								_copyNodeRecur(cp->left, cp),
-								_copyNodeRecur(cp->right, cp));
+								_copyNodeRecur(root->left, cp),
+								_copyNodeRecur(root->right, cp));
 			}
 			return cp;
 		}
