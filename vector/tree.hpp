@@ -2,6 +2,9 @@
 # define TREE_H
 
 # include <memory>
+# include <iostream>
+# include "iterator.hpp"
+# include "tools.hpp"
 
 namespace ft
 {
@@ -20,17 +23,22 @@ namespace ft
 		Node *	left;
 		Node *	right;
 
+		typedef T	value_type;
+
 		Node(const T& val, Node *parent = 0, Node *left = 0, Node *right = 0)
-			: val(val), parent(parent), left(left), right(right) {}
+			: val(val), parent(parent), left(left), right(right) 
+		{}
 		
-		Node(const Node& rhs) { *this = rhs; }
+		Node(const Node& rhs) : val(rhs.val), parent(rhs.parent),
+								left(rhs.left), right(rhs.right)
+		{}
 
 		~Node(void) {}
 
 		Node& operator=(const Node& rhs)
 		{
 			if (this != &rhs) {
-				this->value = rhs.value;
+				this->val = rhs.val;
 				this->left = rhs.left;
 				this->right = rhs.right;
 				this->parent = rhs.parent;
@@ -94,24 +102,21 @@ namespace ft
 /* ************************************************************************** */
 
 //basic BTS, not balanced
-	template <class T, class Compare, class NodeAlloc = std::allocator<Node<T> > >
+	template <class T, class ValCompare, class NodeAlloc = std::allocator<Node<T> > >
 	class Btree
 	{
 	public:
 		typedef T										value_type;
+		typedef size_t									size_type;
 		typedef Node<T>									node;
-		typedef Tree_iterator<node> 					iterator;
+		typedef Tree_iterator<node>						iterator;
 		typedef Tree_iterator<const node>				const_iterator;
 		typedef ft::reverse_iterator<iterator>			reverse_iterator;
 		typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
 	//canonical
-		Btree() : _size(0), _nodeAlloc(NodeAlloc())
-		{
-			this->_root = this->allocNode();
-			this->_rightmost = this->_root;
-			this->_leftmost = this->_root;
-		}
+		Btree() : _root(0), _size(0), _comp(ValCompare()), _nodeAlloc(NodeAlloc())
+		{}
 
 		Btree(const Btree& rhs) : _size(rhs._size),
 								 _nodeAlloc(rhs._nodeAlloc),
@@ -120,7 +125,7 @@ namespace ft
 			this->_root = _copyNodeRecur(rhs._root);
 		}
 
-		~Btree
+		~Btree()
 		{
 			this->clear();
 		}
@@ -139,29 +144,48 @@ namespace ft
 		}
 	
 	//iterators
-		iterator 		begin() { return iterator(this->_leftmost()); }
-		const_iterator	begin() const { return const_iterator(this->_leftmost()); }
-		iterator		end() { return iterator(this->_rightmost()->right); }
-		const_iterator	end() const { return const_iterator(this->_rightmost()->right); }
+		iterator 		begin()
+		{
+			return iterator(this->_leftmost());
+		}
+
+		const_iterator	begin() const
+		{
+			return const_iterator(this->_leftmost());
+		}
+	
+		iterator		end()
+		{
+			if (_root)
+				return iterator(this->_rightmost()->right);
+			return (iterator(_root));
+		}
+
+		const_iterator	end() const
+		{
+			if (_root)
+				return const_iterator(this->_rightmost()->right);
+			return (_root);
+		}
 
 		reverse_iterator		rbegin() { return reverse_iterator(this->end()); }	
-		const_reverse_iterator	rbegin() { return reverse_iterator(this->end()); }
-		reverse_iterator rend() { return reverse_iterator(this->begin()); }
-		const_reverse_iterator rend() { return reverse_iterator(this->begin()); }
+		const_reverse_iterator	rbegin() const { return reverse_iterator(this->end()); }
+		reverse_iterator		rend() { return reverse_iterator(this->begin()); }
+		const_reverse_iterator	rend() const { return reverse_iterator(this->begin()); }
 	
 	//capacity
 		size_type size() const { return (this->_size); }
-		size_type max_size() const { return (this->_alloc.max_size()); }
+		size_type max_size() const { return (this->_nodeAlloc.max_size()); }
 	
 	//insertion
-		pair<iterator, bool> insert(const value_type& x)
+		ft::pair<iterator, bool> insert(const value_type& x)
 		{
 			node *		ret;
 			size_type	tmp;
 
 			tmp = _size;
 			ret = _insert(_root, x);
-			return (ft::make_pair((iterator(ret), _size != tmp)));
+			return (ft::make_pair(iterator(ret), _size != tmp));
 		}
 
 		iterator insert(iterator position, const value_type& x)
@@ -196,7 +220,7 @@ namespace ft
 		{
 			while (first != last)
 			{
-				this->erase(_root, (first->val);
+				this->erase(_root, first->val);
 				first++;
 			}
 		}
@@ -214,13 +238,14 @@ namespace ft
 		void clear()
 		{
 			_clearNodeRecur(_root);
+			_root = 0;
 		}
 
 	//operations
 		iterator		find(const value_type& x)
 		{
 			node * ret = _find(_root, x);
-	
+
 			if (!ret)
 				return (this->end());
 			return (iterator(ret));
@@ -236,8 +261,8 @@ namespace ft
 		}
 
 	//relational operations
-		friend bool operator==(const Btree<T, Compare, NodeAlloc>& x,
-						const Btree<T, Compare, NodeAlloc>& y)
+		friend bool operator==(const Btree<T, ValCompare, NodeAlloc>& x,
+						const Btree<T, ValCompare, NodeAlloc>& y)
 		{
 			if (x._size == y._size)
 			{
@@ -246,32 +271,32 @@ namespace ft
 			return false;
 		}
 
-		friend bool operator!=(const Btree<T, Compare, NodeAlloc>& x,
-						const Btree<T, Compare, NodeAlloc>& y)
+		friend bool operator!=(const Btree<T, ValCompare, NodeAlloc>& x,
+						const Btree<T, ValCompare, NodeAlloc>& y)
 		{
 			return !(x == y);
 		}
 
-		friend bool operator<(const Btree<T, Compare, NodeAlloc>& x,
-						const Btree<T, Compare, NodeAlloc>& y)
+		friend bool operator<(const Btree<T, ValCompare, NodeAlloc>& x,
+						const Btree<T, ValCompare, NodeAlloc>& y)
 		{
-			return std::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
+			return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
 		}
 
-		friend bool operator>(const Btree<T, Compare, NodeAlloc>& x,
-						const Btree<T, Compare, NodeAlloc>& y)
+		friend bool operator>(const Btree<T, ValCompare, NodeAlloc>& x,
+						const Btree<T, ValCompare, NodeAlloc>& y)
 		{
 			return (y < x);
 		}
 
-		friend bool operator>=(const Btree<T, Compare, NodeAlloc>& x,
-						const Btree<T, Compare, NodeAlloc>& y)
+		friend bool operator>=(const Btree<T, ValCompare, NodeAlloc>& x,
+						const Btree<T, ValCompare, NodeAlloc>& y)
 		{
 			return !(x < y);
 		}
 
-		friend bool operator<=(const Btree<T, Compare, NodeAlloc>& x,
-						const Btree<T, Compare, NodeAlloc>& y)
+		friend bool operator<=(const Btree<T, ValCompare, NodeAlloc>& x,
+						const Btree<T, ValCompare, NodeAlloc>& y)
 		{
 			return !(y < x);
 		}
@@ -279,8 +304,8 @@ namespace ft
 	private:
 		node *		_root;
 		size_t		_size;
+		ValCompare	_comp;
 		NodeAlloc	_nodeAlloc;
-		Compare		_comp;
 
 		node*	_insert(node * root, const value_type& val, node * parent = 0)
 		{
@@ -292,6 +317,8 @@ namespace ft
 					parent->left = root;
 				else if (parent)
 					parent->right = root;
+				if (!_root)
+					_root = root;
 			}
 			else if (_comp(val, root->val))
 				return (_insert(root->left, val, root));
@@ -307,9 +334,9 @@ namespace ft
 			if (!root)
 				return (0);
 			if (_comp(root->val, val))
-				_erase(root->right, nd);
+				_erase(root->right, val);
 			else if (_comp(val, root->val))
-				_erase(root->left, nd->val)
+				_erase(root->left, val);
 			else if (root->left && root->right)
 			{
 				tmp = root->right;
@@ -327,7 +354,7 @@ namespace ft
 					root = root->right;
 				if (root)
 					root->parent = tmp->parent;
-				_clearNode(tmp);
+				_clearNode(tmp); //parent's left or right need to set as 0 ???
 			}
 			return root;
 		}
@@ -360,8 +387,11 @@ namespace ft
 		{
 			node * ret = _root;
 
-			while (ret)
-				ret = ret->right;
+			if (ret)
+			{
+				while (ret->right)
+					ret = ret->right;
+			}
 			return (ret);
 		}
 
@@ -392,18 +422,19 @@ namespace ft
 		{
 			_nodeAlloc.destroy(nd);
 			_nodeAlloc.deallocate(nd, 1);
-			nd = 0;
 			_size--;
 		}
 
 		void	_clearNodeRecur(node * root)
 		{
-			if (root->left)
-				_clearNodeRecur(root->left);
-			if (root->right)
-				_clearNodeRecur(root->right);
-			if (root != this->end())
+			if (root)
+			{
+				if (root->left)
+					_clearNodeRecur(root->left);
+				if (root->right)
+					_clearNodeRecur(root->right);
 				_clearNode(root);
+			}
 		}
 	}; //classe Btree
 

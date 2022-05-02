@@ -14,7 +14,7 @@
 # define FT_ITERATOR_H
 
 # include <cstddef>
-# include "iterator.hpp"
+# include <iostream>
 
 namespace ft
 {
@@ -280,11 +280,11 @@ namespace ft
 	public:
 	//typedef
 		typedef Iterator												iterator_type;
-		typedef typename iterator_traits<Iterator>::difference_type		difference_type;
-		typedef typename iterator_traits<Iterator>::value_type			value_type;
-		typedef typename iterator_traits<Iterator>::pointer				pointer;
-		typedef typename iterator_traits<Iterator>::reference			reference;
-		typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
+		typedef typename ft::iterator_traits<Iterator>::difference_type		difference_type;
+		typedef typename ft::iterator_traits<Iterator>::value_type			value_type;
+		typedef typename ft::iterator_traits<Iterator>::pointer				pointer;
+		typedef typename ft::iterator_traits<Iterator>::reference			reference;
+		typedef typename ft::iterator_traits<Iterator>::iterator_category	iterator_category;
 
 	//constructors & destructor & copy assign
 		reverse_iterator() : _base() {}
@@ -448,21 +448,21 @@ namespace ft
 /* ************************************************************************** */
 
 	template <typename T>
-	class Tree_iterator : public ft::iterator<ft::bidirectional_iterator_tag, T>
+	class Tree_iterator : public ft::iterator<ft::bidirectional_iterator_tag, typename T::value_type>
 	{
 
 	public:
-		typedef ft::iterator<ft::bidirectional_iterator_tag, T>			Iterator;
-		typedef typename iterator_traits<Iterator>::difference_type		difference_type;
-		typedef typename iterator_traits<Iterator>::value_type			value_type;
-		typedef typename iterator_traits<Iterator>::pointer				pointer;
-		typedef typename iterator_traits<Iterator>::reference			reference;
-		typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
+		typedef	typename T::value_type										value_type;
+		typedef ft::iterator<ft::bidirectional_iterator_tag, value_type>	Iterator;
+		typedef typename iterator_traits<Iterator>::difference_type			difference_type;
+		typedef typename iterator_traits<Iterator>::pointer					pointer;
+		typedef typename iterator_traits<Iterator>::reference				reference;
+		typedef typename iterator_traits<Iterator>::iterator_category		iterator_category;
 
 	//canonical
 		Tree_iterator(void) : _base() {}
 
-		Tree_iterator(pointer it) : _base(it) {}
+		Tree_iterator(T * it) : _base(it) {}
 
 		Tree_iterator(const Tree_iterator& rhs) : _base(rhs._base) {}
 
@@ -478,7 +478,7 @@ namespace ft
 	//member funcs
 		reference operator*(void) const
 		{
-			return (*_base);
+			return (_base->val);
 		}
 
 		pointer operator->(void)
@@ -517,21 +517,24 @@ namespace ft
 			return (Tree_iterator<const T>(this->_base));
 		}
 
+		T *	base() const 
+		{
+			return (this->_base);
+		}
+
 		private:
-			pointer _base;
+			T * _base;
 	}; //class Tree_iterator
 
 	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator==(const Tree_iterator<Iterator1> lhs,
+	bool	operator==(const Tree_iterator<Iterator1> lhs,
 				const Tree_iterator<Iterator2> rhs)
 	{
 		return (lhs.base() == rhs.base());
 	}
 
 	template<typename Iterator1, typename Iterator2>
-	typename Tree_iterator<Iterator1>::difference_type
-		operator!=(const Tree_iterator<Iterator1> lhs,
+	bool	operator!=(const Tree_iterator<Iterator1> lhs,
 				const Tree_iterator<Iterator2> rhs)
 	{
 		return (lhs.base() != rhs.base());
