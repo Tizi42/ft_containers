@@ -191,7 +191,7 @@ namespace ft
 
 		size_type erase(const key_type& x)
 		{
-			return (this->_tree.erase(x));
+			return (this->_tree.erase(ft::make_pair(x, mapped_type())));
 		}
 
 		void erase(iterator first, iterator last)
@@ -230,11 +230,10 @@ namespace ft
 		{
 			iterator	begin = this->begin();
 			iterator	end = this->end();
-			value_type	val = ft::make_pair(x, mapped_type());
 	
 			while (begin != end)
 			{
-				if (_comp(begin->val, val))
+				if (!(_comp(begin->first, x)))
 					return (begin);
 				begin++;
 			}
@@ -245,11 +244,10 @@ namespace ft
 		{
 			const_iterator	begin = this->begin();
 			const_iterator	end = this->end();
-			value_type &	val = ft::make_pair(x, mapped_type());
 	
 			while (begin != end)
 			{
-				if (!(_comp(begin->val, val)))
+				if (!(_comp(begin->first, x)))
 					return (begin);
 				begin++;
 			}
@@ -260,11 +258,10 @@ namespace ft
 		{
 			iterator	begin = this->begin();
 			iterator	end = this->end();
-			value_type	val = ft::make_pair(x, mapped_type());
 	
 			while (begin != end)
 			{
-				if (_comp(val, begin->val))
+				if (_comp(x, begin->first))
 					return (begin);
 				begin++;
 			}
@@ -275,11 +272,10 @@ namespace ft
 		{
 			const_iterator	begin = this->begin();
 			const_iterator	end = this->end();
-			value_type	val = ft::make_pair(x, mapped_type());
 	
 			while (begin != end)
 			{
-				if (_comp(val, begin->val))
+				if (_comp(x, begin->first))
 					return (begin);
 				begin++;
 			}
@@ -313,7 +309,7 @@ namespace ft
 		friend bool operator!=(const map<Key,T,Compare,Alloc>& x,
 						const map<Key,T,Compare,Alloc>& y)
 		{
-			return (x._tree == y._tree);
+			return !(x == y);
 		}
 
 		friend bool operator<(const map<Key,T,Compare,Alloc>& x,
@@ -325,19 +321,19 @@ namespace ft
 		friend bool operator>(const map<Key,T,Compare,Alloc>& x,
 						const map<Key,T,Compare,Alloc>& y)
 		{
-			return (x._tree > y._tree);
+			return (y < x);
 		}
 
 		friend bool operator>=(const map<Key,T,Compare,Alloc>& x,
 						const map<Key,T,Compare,Alloc>& y)
 		{
-			return (x._tree >= y._tree);
+			return !(x < y);
 		}
 
 		friend bool operator<=(const map<Key,T,Compare,Alloc>& x,
 						const map<Key,T,Compare,Alloc>& y)
 		{
-			return (x._tree <= y._tree);
+			return !(y < x);
 		}
 
 	private:

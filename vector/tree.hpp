@@ -3,6 +3,7 @@
 
 # include <memory>
 # include <iostream>
+# include <algorithm>
 # include "iterator.hpp"
 # include "tools.hpp"
 
@@ -22,18 +23,25 @@ namespace ft
 		Node *	parent;
 		Node *	left;
 		Node *	right;
+		int		color;
 
 		typedef T	value_type;
 
-		Node(const T& val, Node *parent = 0, Node *left = 0, Node *right = 0)
-			: val(val), parent(parent), left(left), right(right) 
+		Node(const T& val, Node *parent = 0, Node *left = 0, Node *right = 0,
+				int color = 0)
+			: val(val), parent(parent), left(left), right(right), color(color)
 		{}
 		
 		Node(const Node& rhs) : val(rhs.val), parent(rhs.parent),
-								left(rhs.left), right(rhs.right)
+								left(rhs.left), right(rhs.right), color(rhs.color)
 		{}
 
-		~Node(void) {}
+		~Node(void)
+		{
+			parent = 0;
+			left = 0;
+			right = 0;
+		}
 
 		Node& operator=(const Node& rhs)
 		{
@@ -42,13 +50,14 @@ namespace ft
 				this->left = rhs.left;
 				this->right = rhs.right;
 				this->parent = rhs.parent;
+				this->color = rhs.color;
 			}
 			return (*this);
 		}
 
 		Node *	inOrderSuccessor()
 		{
-			Node *nd = this;
+			Node * nd = this;
 
 			if (!nd)
 				return 0;
@@ -61,6 +70,30 @@ namespace ft
 			}
 
 			Node * p = nd->parent;
+
+			while (p && p->right == nd)
+			{
+				nd = p;
+				p = p->parent;
+			}
+			return (p);
+		}
+
+		const Node *	inOrderSuccessor() const
+		{
+			const Node * nd = this;
+
+			if (!nd)
+				return 0;
+			if (nd->right)
+			{
+				nd = nd->right;
+				while (nd->left)
+					nd = nd->left;
+				return (nd);
+			}
+
+			const Node * p = nd->parent;
 
 			while (p && p->right == nd)
 			{
@@ -93,6 +126,30 @@ namespace ft
 			}
 			return (p);
 		}
+
+		const Node *	inOrderPredecessor() const
+		{
+			const Node *nd = this;
+
+			if (!nd)
+				return 0;
+			if (nd->left)
+			{
+				nd = nd->left;
+				while (nd->right)
+					nd = nd->right;
+				return (nd);
+			}
+
+			const Node * p = nd->parent;
+
+			while (p && p->left == nd)
+			{
+				nd = p;
+				p = p->parent;
+			}
+			return (p);
+		}
 	};
 
 /* ************************************************************************** */
@@ -115,14 +172,20 @@ namespace ft
 		typedef ft::reverse_iterator<const_iterator>	const_reverse_iterator;
 
 	//canonical
-		Btree() : _root(0), _size(0), _comp(ValCompare()), _nodeAlloc(NodeAlloc())
+		Btree() : _root(0), _end(0), _size(0),
+					_comp(ValCompare()),
+					_nodeAlloc(NodeAlloc())
 		{}
 
 		Btree(const Btree& rhs) : _size(rhs._size),
 								 _comp(rhs._comp),
 								  _nodeAlloc(rhs._nodeAlloc)
 		{
-			this->_root = _copyNodeRecur(rhs._root);
+			this->_end = _copyNodeRecur(rhs._end);
+			if (this->_end)
+				this->_root = this->_end->left;
+			else
+				this->_root = this->_end;
 		}
 
 		~Btree()
@@ -138,7 +201,11 @@ namespace ft
 				this->_size = rhs._size;
 				this->_nodeAlloc = rhs._nodeAlloc;
 				this->_comp = rhs._comp;
-				this->_root = _copyNodeRecur(rhs._root);
+				this->_end = _copyNodeRecur(rhs._end);
+				if (this->_end)
+					this->_root = this->_end->left;
+				else
+					this->_root = this->_end;
 			}
 			return (*this);
 		}
@@ -156,16 +223,12 @@ namespace ft
 	
 		iterator		end()
 		{
-			if (_root)
-				return iterator(this->_rightmost()->right);
-			return (iterator(_root));
+			return iterator(_end);
 		}
 
 		const_iterator	end() const
 		{
-			if (_root)
-				return const_iterator(this->_rightmost()->right);
-			return (_root);
+			return const_iterator(_end);
 		}
 
 		reverse_iterator		rbegin() { return reverse_iterator(this->end()); }	
@@ -190,8 +253,9 @@ namespace ft
 
 		iterator insert(iterator position, const value_type& x)
 		{
-			if (position && (!position->parent || _comp(x, position->parent->val)))
-				return iterator(_insert(&*position, x));
+			if (position.base() && (!position.base()->parent
+							|| _comp(x, position.base()->parent->val)))
+				return iterator(_insert(position.base(), x));
 			return iterator(_insert(_root, x));
 		}
 
@@ -220,24 +284,25 @@ namespace ft
 		{
 			while (first != last)
 			{
-				this->erase(_root, first->val);
-				first++;
+				this->erase(*first++);
 			}
 		}
 
 	//other modifiers
-		void swap(Btree& rhs)
+		void swap(Btree<T, ValCompare, NodeAlloc>& rhs)
 		{
 			if (this != &rhs)
 			{
-				std::swap(this->_root = rhs._root);
-				std::swap(this->_size = rhs._size);
+				std::swap(this->_root, rhs._root);
+				std::swap(this->_end, rhs._end);
+				std::swap(this->_size, rhs._size);
 			}
 		}
 
 		void clear()
 		{
-			_clearNodeRecur(_root);
+			_clearNodeRecur(_end);
+			_end = 0;
 			_root = 0;
 		}
 
@@ -302,11 +367,6 @@ namespace ft
 		}
 
 	private:
-		node *		_root;
-		size_t		_size;
-		ValCompare	_comp;
-		NodeAlloc	_nodeAlloc;
-
 		node*	_insert(node * root, const value_type& val, node * parent = 0)
 		{
 			if (!root)
@@ -318,7 +378,11 @@ namespace ft
 				else if (parent)
 					parent->right = root;
 				if (!_root)
+				{
 					_root = root;
+					_end = _createNode(value_type(), 0, _root, 0);
+					_root->parent = _end;
+				}
 			}
 			else if (_comp(val, root->val))
 				return (_insert(root->left, val, root));
@@ -343,16 +407,11 @@ namespace ft
 				while (tmp->left)
 					tmp = tmp->left;
 
-				node * replace = _createNode(tmp->val, root->parent, root->left,
-												_erase(root->right, tmp->val));
+				node * replace = _createNode(tmp->val, root->parent, root->left, 0);
 				root->left->parent = replace;
 				root->right->parent = replace;
-				if (root->parent && _comp(root->parent->val, root->val))
-					root->parent->right = replace;
-				else if (root->parent)
-					root->parent->left = replace;
-				else
-					_root = replace;
+				replace->right = _erase(root->right, tmp->val);
+				_parentUpdateChild(root, replace);
 				_clearNode(root);
 			}
 			else
@@ -364,14 +423,7 @@ namespace ft
 					root = root->right;
 				if (root)
 					root->parent = tmp->parent;
-
-				if (tmp->parent && _comp(tmp->parent->val, tmp->val))
-					tmp->parent->right = root;
-				else if (tmp->parent)
-					tmp->parent->left = root;
-				else
-					_root = root;
-
+				_parentUpdateChild(tmp, root);
 				_clearNode(tmp);
 			}
 			return root;
@@ -429,18 +481,37 @@ namespace ft
 
 			if (root)
 			{
-				cp = _createNode(root->val, parent,
-								_copyNodeRecur(root->left, cp),
-								_copyNodeRecur(root->right, cp));
+				cp = _createNode(root->val, parent);
+				cp->left = _copyNodeRecur(root->left, cp),
+				cp->right = _copyNodeRecur(root->right, cp);
 			}
 			return cp;
 		}
 
 		void	_clearNode(node * nd)
 		{
-			_nodeAlloc.destroy(nd);
-			_nodeAlloc.deallocate(nd, 1);
-			_size--;
+			if (nd)
+			{
+				_nodeAlloc.destroy(nd);
+				_nodeAlloc.deallocate(nd, 1);
+				if (_size)
+					_size--;
+			}
+		}
+
+		void	_parentUpdateChild(node *oldChild, node *newChild)
+		{
+			if (!oldChild)
+				return ;
+			if (_root == oldChild)
+				_root = newChild;
+			if (oldChild->parent)
+			{
+				if (oldChild->parent->right == oldChild)
+					oldChild->parent->right = newChild;
+				else if (oldChild->parent->left == oldChild)
+					oldChild->parent->left = newChild;
+			}
 		}
 
 		void	_clearNodeRecur(node * root)
@@ -454,6 +525,12 @@ namespace ft
 				_clearNode(root);
 			}
 		}
+
+		node *		_root;
+		node *		_end;
+		size_t		_size;
+		ValCompare	_comp;
+		NodeAlloc	_nodeAlloc;
 	}; //classe Btree
 
 } //namespace ft
