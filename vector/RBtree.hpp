@@ -60,6 +60,11 @@ namespace ft
 			return (*this);
 		}
 
+		T *		valptr()
+		{
+			return (&val);
+		}
+
 		Node *	inOrderSuccessor()
 		{
 			Node * nd = this;
@@ -387,7 +392,7 @@ namespace ft
 		size_type erase(const value_type& x)
 		{
 			size_type	tmp = _size;
-
+	
 			_erase(_root, x);
 			return (tmp - _size);
 		}
@@ -558,29 +563,41 @@ namespace ft
 			_root->color = Black;
 		}
 
-		node*	_erase(node * root, const value_type& val)
+		node*	_erase(node * root, const value_type& val, int clean = 1)
 		{
 			node * tmp;
 
 			if (!root)
 				return (0);
 			if (_comp(root->val, val))
-				_erase(root->right, val);
+				_erase(root->right, val, clean);
 			else if (_comp(val, root->val))
-				_erase(root->left, val);
+				_erase(root->left, val, clean);
 			else if (root->left && root->right)
 			{
 				tmp = root->right;
 				while (tmp->left)
 					tmp = tmp->left;
 
-				node * replace = _createNode(tmp->val, root->parent,
-											root->left, 0, root->color);
-				_size++;
-				root->left->parent = replace;
-				root->right->parent = replace;
-				replace->right = _erase(root->right, tmp->val);
-				_parentUpdateChild(root, replace);
+				root->right = _erase(root->right, tmp->val, 0);
+
+				root->left->parent = tmp;
+				if (root->right)
+					root->right->parent = tmp;
+				_parentUpdateChild(root, tmp);
+	
+				tmp->left = root->left;
+				tmp->right = root->right;
+				tmp->parent = root->parent;
+				tmp->color = root->color;
+
+				// node * replace = _createNode(tmp->val, root->parent,
+				// 							root->left, root->right, root->color);
+				// _size++;
+				// root->left->parent = replace;
+				// root->right->parent = replace;
+				// _parentUpdateChild(root, replace);
+				// replace->right = _erase(root->right, tmp->val);
 				_clearNode(root);
 			}
 			else
@@ -595,19 +612,32 @@ namespace ft
 				_parentUpdateChild(tmp, root);
 				if (tmp->color == Black)
 					_eraseFix(root, tmp->parent);
-				_clearNode(tmp);
+				if (clean)
+					_clearNode(tmp);
 			}
 			return root;
 		}
 
-		void _printNodeRecu(node * n)
-		{
-			if ()
-			std::cout << "///////////"  << std::endl
-			std::cout << "n->val:" << n->val << std::endl;	
-			std::cout << "n->color:" << n->color << std::endl;	
-			if ()
-		}
+		// void _printNodeRecu(node * n)
+		// {
+		// 	if (!n)
+		// 		return ;
+		// 	std::cout << "///////////"  << std::endl;
+		// 	std::cout << "n->val:" << n->val.first << std::endl;	
+		// 	std::cout << "n->color:" << n->color << std::endl;	
+		// 	if (n->left)
+		// 	{
+		// 		std::cout << "n-left->val:" << n->left->val.first << std::endl;	
+		// 		std::cout << "n-left->color:" << n->left->color << std::endl;
+		// 	}	
+		// 	if (n->right)
+		// 	{
+		// 		std::cout << "n-right->val:" << n->right->val.first << std::endl;	
+		// 		std::cout << "n-right->color:" << n->right->color << std::endl;	
+		// 	}
+		// 	_printNodeRecu(n->left);
+		// 	_printNodeRecu(n->right);
+		// }
 
 		/*	
 		**	Let y the erased node
@@ -618,25 +648,17 @@ namespace ft
 		*/
 		void	_eraseFix(node *x, node * parent)
 		{	
-
 			while (x != _root && (x == 0 || x->color == Black))
 			{
 				if (x == parent->left)
 				{
-
 					node * sibling = parent->right;
-	std::cout << "hi9"  << std::endl;
-	std::cout << (sibling == 0)  << std::endl;
 
 					if (sibling->color == Red)
 					{
-	std::cout << "hi10"  << std::endl;
-
 						sibling->color = Black;
 						parent->color = Red;
-						_leftRotate(parent);
-
-				
+						_leftRotate(parent);	
 						sibling = parent->right;
 					}	
 					if ((!sibling->left || sibling->left->color == Black)
@@ -667,7 +689,6 @@ namespace ft
 				else //x == parent->right, mirror actions
 				{
 					node * sibling = parent->left;
-	std::cout << "hi5"  << std::endl;
 
 					if (sibling->color == Red)
 					{
@@ -676,8 +697,6 @@ namespace ft
 						_rightRotate(parent);
 						sibling = parent->left;
 					}
-	std::cout << "hi6"  << std::endl;
-	
 					if ((!sibling->left || sibling->left->color == Black)
 						&& (!sibling->right || sibling->right->color == Black))
 					{

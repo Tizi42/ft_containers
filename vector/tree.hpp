@@ -396,7 +396,10 @@ namespace ft
 		{
 			while (first != last)
 			{
+				std::cout << std::endl;
+				std::cout << "Next val: " << first.base()->inOrderSuccessor()->val.first << std::endl;
 				this->erase(*first++);
+				std::cout << "Next val after erase: " << (*first).first << std::endl;
 			}
 		}
 

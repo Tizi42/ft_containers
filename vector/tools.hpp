@@ -102,6 +102,12 @@ namespace ft
 /* ************************************************************************** */
 
 	template <class T1, class T2>
+	struct pair;
+
+	template <class T1, class T2>
+	ft::pair<T1,T2>		make_pair(T1 x, T2 y);
+
+	template <class T1, class T2>
 	struct pair
 	{
 	public:
@@ -119,10 +125,10 @@ namespace ft
 		~pair() {}
 
 		// note: implicitly declared ???
-		pair& operator=(const pair& pr)
+		pair& operator=(const pair& rhs)
 		{
-			this->first = pr.first;
-			this->second = pr.second;
+			this->first = rhs.first;
+			this->second = rhs.second;
 			return (*this);
 		}
 
