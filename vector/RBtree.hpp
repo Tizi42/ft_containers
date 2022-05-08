@@ -507,13 +507,13 @@ namespace ft
 
 		void	_insertFix(node * x)
 		{
-			while (x != _root && x->parent->color = Red)
+			while (x != _root && x->parent->color == Red)
 			{
 				node * gdparent = x->parent->parent;
 				if (x->parent == gdparent->left) //parent if the left child of grand-parent
 				{
 					node * uncle = gdparent->right;
-					if (uncle && uncle->color = Red) //uncle is red
+					if (uncle && uncle->color == Red) //uncle is red
 					{
 						uncle->color = Black;
 						x->parent->color = Black;
@@ -535,7 +535,7 @@ namespace ft
 				else //parent is right child of grand-parent, mirror actions
 				{
 					node * uncle = gdparent->left;
-					if (uncle && uncle->color = Red) //uncle is red
+					if (uncle && uncle->color == Red) //uncle is red
 					{
 						uncle->color = Black;
 						x->parent->color = Black;
@@ -593,17 +593,119 @@ namespace ft
 				if (root)
 					root->parent = tmp->parent;
 				_parentUpdateChild(tmp, root);
+				if (tmp->color == Black)
+					_eraseFix(root, tmp->parent);
 				_clearNode(tmp);
-
-				_eraseFix(root);
 			}
 			return root;
 		}
 
-		void	_eraseFix()
+		void _printNodeRecu(node * n)
 		{
-			
+			if ()
+			std::cout << "///////////"  << std::endl
+			std::cout << "n->val:" << n->val << std::endl;	
+			std::cout << "n->color:" << n->color << std::endl;	
+			if ()
+		}
 
+		/*	
+		**	Let y the erased node
+		**	x is the node that replaced y
+		**	If x != null, x is y's only child, x's color is definitely Red
+		**	Since y needs to be Black to launch this function, y must had a sibling
+		**	The (x->color == Black) condition is usefull only starting from the 2nd round of while loop
+		*/
+		void	_eraseFix(node *x, node * parent)
+		{	
+
+			while (x != _root && (x == 0 || x->color == Black))
+			{
+				if (x == parent->left)
+				{
+
+					node * sibling = parent->right;
+	std::cout << "hi9"  << std::endl;
+	std::cout << (sibling == 0)  << std::endl;
+
+					if (sibling->color == Red)
+					{
+	std::cout << "hi10"  << std::endl;
+
+						sibling->color = Black;
+						parent->color = Red;
+						_leftRotate(parent);
+
+				
+						sibling = parent->right;
+					}	
+					if ((!sibling->left || sibling->left->color == Black)
+						&& (!sibling->right || sibling->right->color == Black))
+					{
+						sibling->color = Red;
+						x = parent;
+						parent = x->parent;
+					}
+					else
+					{
+						if (!sibling->right || sibling->right->color == Black)
+						{
+							if (sibling->left)
+								sibling->left->color = Black;
+							sibling->color = Red;
+							_rightRotate(sibling);
+							sibling = parent->right;
+						}
+						sibling->color = parent->color;
+						parent->color = Black;
+						if (sibling->right)
+							sibling->right->color = Black;
+						_leftRotate(parent);
+						break;
+					}
+				}
+				else //x == parent->right, mirror actions
+				{
+					node * sibling = parent->left;
+	std::cout << "hi5"  << std::endl;
+
+					if (sibling->color == Red)
+					{
+						sibling->color = Black;
+						parent->color = Red;
+						_rightRotate(parent);
+						sibling = parent->left;
+					}
+	std::cout << "hi6"  << std::endl;
+	
+					if ((!sibling->left || sibling->left->color == Black)
+						&& (!sibling->right || sibling->right->color == Black))
+					{
+						sibling->color = Red;
+						x = parent;
+						parent = x->parent;
+					}
+					else
+					{
+						if (!sibling->left || sibling->left->color == Black)
+						{
+							if (sibling->right)
+								sibling->right->color = Black;
+							sibling->color = Red;
+							_leftRotate(sibling);
+							sibling = parent->left;
+						}
+						sibling->color = parent->color;
+						parent->color = Black;
+						if (sibling->left)
+							sibling->left->color = Black;
+						_rightRotate(parent);
+						break;
+					}
+				}
+			}
+			if (x)
+				x->color = Black;
 		}
 
 		node *	_find(node * root, const value_type& val) const
