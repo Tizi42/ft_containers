@@ -57,11 +57,11 @@ namespace ft
 		value_compare value_comp() const { return (value_compare(key_compare())); }
 		
 		//typedef
-		typedef ft::Btree<value_type, value_compare, Alloc>		tree_type;
-		typedef typename tree_type::iterator					iterator;
-		typedef typename tree_type::const_iterator				const_iterator;
-		typedef ft::reverse_iterator<iterator>					reverse_iterator;
-		typedef ft::reverse_iterator<const_iterator>			const_reverse_iterator;
+		typedef ft::Btree<value_type, value_compare, allocator_type>		tree_type;
+		typedef typename tree_type::iterator								iterator;
+		typedef typename tree_type::const_iterator							const_iterator;
+		typedef ft::reverse_iterator<iterator>								reverse_iterator;
+		typedef ft::reverse_iterator<const_iterator>						const_reverse_iterator;
 
 	//allocation/deallocation
 		explicit map (const key_compare& comp = key_compare(),

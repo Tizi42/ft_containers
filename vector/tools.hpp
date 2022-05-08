@@ -1,5 +1,5 @@
-#ifndef TOOLS_H
-# define TOOLS_H
+#ifndef FT_TOOLS_H
+# define FT_TOOLS_H
 
 namespace ft
 {

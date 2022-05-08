@@ -1,5 +1,5 @@
-#ifndef FT_TREE_H
-# define FT_TREE_H
+#ifndef FT_RBTREE_H
+# define FT_RBTREE_H
 
 # include <memory>
 # include <iostream>
@@ -17,7 +17,7 @@ namespace ft
 
 //basic BTS, not balanced
 	template <class T, class ValCompare, class Alloc = std::allocator<T> >
-	class Btree
+	class RBtree
 	{
 	public:
 /* ************************************************************************** */
@@ -37,7 +37,7 @@ namespace ft
 		Color	color;
 
 		Node(const T& val, Node *parent = 0, Node *left = 0, Node *right = 0,
-				Color color = Black)
+				Color color = Red)
 			: val(val), parent(parent), left(left), right(right), color(color)
 		{}
 		
@@ -283,14 +283,14 @@ namespace ft
 		typedef typename Alloc::template rebind<Node >::other NodeAlloc;
 
 	//canonical
-		Btree() : _root(0), _size(0),
+		RBtree() : _root(0), _size(0),
 					_comp(ValCompare()),
 					_nodeAlloc(NodeAlloc())
 		{
 			_end = _createNode(value_type(), 0, 0, 0);
 		}
 
-		Btree(const Btree& rhs) : _size(rhs._size),
+		RBtree(const RBtree& rhs) : _size(rhs._size),
 								 _comp(rhs._comp),
 								  _nodeAlloc(rhs._nodeAlloc)
 		{
@@ -298,14 +298,14 @@ namespace ft
 			this->_root = this->_end->left;
 		}
 
-		~Btree()
+		~RBtree()
 		{
 			this->clear();
 			_nodeAlloc.destroy(_end);
 			_nodeAlloc.deallocate(_end, 1);
 		}
 
-		Btree &	operator=(const Btree & rhs)
+		RBtree &	operator=(const RBtree & rhs)
 		{
 			if (this != &rhs)
 			{
@@ -401,7 +401,7 @@ namespace ft
 		}
 
 	//other modifiers
-		void swap(Btree& rhs)
+		void swap(RBtree& rhs)
 		{
 			if (this != &rhs)
 			{
@@ -439,8 +439,8 @@ namespace ft
 		}
 
 	//relational operations
-		friend bool operator==(const Btree<T, ValCompare, Alloc>& x,
-						const Btree<T, ValCompare, Alloc>& y)
+		friend bool operator==(const RBtree<T, ValCompare, Alloc>& x,
+						const RBtree<T, ValCompare, Alloc>& y)
 		{
 			if (x._size == y._size)
 			{
@@ -449,32 +449,32 @@ namespace ft
 			return false;
 		}
 
-		friend bool operator!=(const Btree<T, ValCompare, Alloc>& x,
-						const Btree<T, ValCompare, Alloc>& y)
+		friend bool operator!=(const RBtree<T, ValCompare, Alloc>& x,
+						const RBtree<T, ValCompare, Alloc>& y)
 		{
 			return !(x == y);
 		}
 
-		friend bool operator<(const Btree<T, ValCompare, Alloc>& x,
-						const Btree<T, ValCompare, Alloc>& y)
+		friend bool operator<(const RBtree<T, ValCompare, Alloc>& x,
+						const RBtree<T, ValCompare, Alloc>& y)
 		{
 			return ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end());
 		}
 
-		friend bool operator>(const Btree<T, ValCompare, Alloc>& x,
-						const Btree<T, ValCompare, Alloc>& y)
+		friend bool operator>(const RBtree<T, ValCompare, Alloc>& x,
+						const RBtree<T, ValCompare, Alloc>& y)
 		{
 			return (y < x);
 		}
 
-		friend bool operator>=(const Btree<T, ValCompare, Alloc>& x,
-						const Btree<T, ValCompare, Alloc>& y)
+		friend bool operator>=(const RBtree<T, ValCompare, Alloc>& x,
+						const RBtree<T, ValCompare, Alloc>& y)
 		{
 			return !(x < y);
 		}
 
-		friend bool operator<=(const Btree<T, ValCompare, Alloc>& x,
-						const Btree<T, ValCompare, Alloc>& y)
+		friend bool operator<=(const RBtree<T, ValCompare, Alloc>& x,
+						const RBtree<T, ValCompare, Alloc>& y)
 		{
 			return !(y < x);
 		}
@@ -496,12 +496,66 @@ namespace ft
 					_end->left = _root;
 					_root->parent = _end;
 				}
+				_insertFix(root);
 			}
 			else if (_comp(val, root->val))
 				return (_insert(root->left, val, root));
 			else if (_comp(root->val, val))
 				return (_insert(root->right, val, root));
 			return (root);
+		}
+
+		void	_insertFix(node * x)
+		{
+			while (x != _root && x->parent->color = Red)
+			{
+				node * gdparent = x->parent->parent;
+				if (x->parent == gdparent->left) //parent if the left child of grand-parent
+				{
+					node * uncle = gdparent->right;
+					if (uncle && uncle->color = Red) //uncle is red
+					{
+						uncle->color = Black;
+						x->parent->color = Black;
+						gdparent->color = Red;
+						x = gdparent;
+					}
+					else //no uncle or uncle is black
+					{
+						if (x == x->parent->right) //x is the right child of parent
+						{
+							x = x->parent;
+							_leftRotate(x);
+						}
+						x->parent->color = Black;
+						gdparent->color = Red;
+						_rightRotate(gdparent);
+					}
+				}
+				else //parent is right child of grand-parent, mirror actions
+				{
+					node * uncle = gdparent->left;
+					if (uncle && uncle->color = Red) //uncle is red
+					{
+						uncle->color = Black;
+						x->parent->color = Black;
+						gdparent->color = Red;
+						x = gdparent;
+					}
+					else //no uncle or uncle is black
+					{
+						if (x == x->parent->left) //x is the right left of parent
+						{
+							x = x->parent;
+							_rightRotate(x);
+						}
+						x->parent->color = Black;
+						gdparent->color = Red;
+						_leftRotate(gdparent);
+					}
+				}
+			}
+			_root->color = Black;
 		}
 
 		node*	_erase(node * root, const value_type& val)
@@ -520,7 +574,8 @@ namespace ft
 				while (tmp->left)
 					tmp = tmp->left;
 
-				node * replace = _createNode(tmp->val, root->parent, root->left, 0);
+				node * replace = _createNode(tmp->val, root->parent,
+											root->left, 0, root->color);
 				_size++;
 				root->left->parent = replace;
 				root->right->parent = replace;
@@ -539,8 +594,16 @@ namespace ft
 					root->parent = tmp->parent;
 				_parentUpdateChild(tmp, root);
 				_clearNode(tmp);
+
+				_eraseFix(root);
 			}
 			return root;
+		}
+
+		void	_eraseFix()
+		{
+			
+
 		}
 
 		node *	_find(node * root, const value_type& val) const
@@ -580,12 +643,12 @@ namespace ft
 		}
 
 		node *	_createNode(const value_type& val, node * parent,
-									node *left = 0, node *right = 0)
+									node *left = 0, node *right = 0, Color c = Red)
 		{
 			node *	ret;
 
 			ret = _nodeAlloc.allocate(1);
-			_nodeAlloc.construct(ret, node(val, parent, left, right));
+			_nodeAlloc.construct(ret, node(val, parent, left, right, c));
 			return (ret);
 		}
 
@@ -595,7 +658,7 @@ namespace ft
 
 			if (root)
 			{
-				cp = _createNode(root->val, parent);
+				cp = _createNode(root->val, parent, 0, 0, root->color);
 				cp->left = _copyNodeRecur(root->left, cp),
 				cp->right = _copyNodeRecur(root->right, cp);
 			}
@@ -614,12 +677,6 @@ namespace ft
 				{
 					_root = 0;
 					_end->left = 0;
-					// if (_end)
-					// {
-					// 	_nodeAlloc.destroy(_end);
-					// 	_nodeAlloc.deallocate(_end, 1);
-					// 	_end = 0;
-					// }
 				}
 			}
 		}
@@ -651,12 +708,42 @@ namespace ft
 			}
 		}
 
+		void	_leftRotate(node * x)
+		{
+			node * y = x->right;
+
+			x->right = y->left;
+			if (x->right)
+				x->right->parent = x;
+
+			y->parent = x->parent;
+			_parentUpdateChild(x, y);
+
+			y->left = x;
+			x->parent = y;
+		}
+
+		void	_rightRotate(node *x)
+		{
+			node * y = x->left;
+
+			x->left = y->right;
+			if (x->left)
+				x->left->parent = x;
+
+			y->parent = x->parent;
+			_parentUpdateChild(x, y);
+
+			y->right = x;
+			x->parent = y;
+		}
+
 		node *		_root;
 		node *		_end;
 		size_t		_size;
 		ValCompare	_comp;
 		NodeAlloc	_nodeAlloc;
-	}; //classe Btree
+	}; //classe RBtree
 
 } //namespace ft
 #endif
