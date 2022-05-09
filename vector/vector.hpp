@@ -157,6 +157,8 @@ namespace ft
 
 		size_type	max_size() const
 		{
+			if (sizeof(T) == 1)
+				return (PTRDIFF_MAX);
 			return (_alloc.max_size());
 		}
 

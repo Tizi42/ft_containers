@@ -5,7 +5,7 @@
 # include <memory>
 # include "tools.hpp"
 # include "iterator.hpp"
-# include "tree.hpp"
+# include "RBtree.hpp"
 
 
 namespace ft {
@@ -28,9 +28,10 @@ namespace ft {
 		typedef typename allocator_type::pointer			pointer;
 		typedef typename allocator_type::const_pointer		const_pointer;
 
-		typedef ft::Btree<value_type, value_compare>		tree_type;
+		typedef ft::RBtree<value_type, value_compare>		tree_type;
 		typedef typename tree_type::iterator				iterator;
 		typedef typename tree_type::const_iterator			const_iterator;
+	//	typedef const_iterator								iterator;
 		typedef ft::reverse_iterator<iterator>				reverse_iterator;
 		typedef ft::reverse_iterator<const_iterator>		const_reverse_iterator;
 
@@ -59,7 +60,7 @@ namespace ft {
 
 		~set()
 		{
-
+			this->clear();
 		}
 
 		set &	operator=(const set & rhs)
@@ -178,7 +179,12 @@ namespace ft {
 		value_compare value_comp() const { return (value_compare()); }
 
 	//set operations
-		iterator		find(const key_type& x) const
+		iterator		find(const key_type& x)
+		{
+			return (this->_tree.find(x));
+		}
+
+		const_iterator	find(const key_type& x) const
 		{
 			return (this->_tree.find(x));
 		}
@@ -188,7 +194,7 @@ namespace ft {
 			return (this->find(x) != this->end());
 		}
 	
-		iterator	lower_bound(const key_type& x) const
+		iterator	lower_bound(const key_type& x)
 		{
 			iterator	begin = this->begin();
 			iterator	end = this->end();
@@ -202,7 +208,21 @@ namespace ft {
 			return (begin);
 		}
 
-		iterator		upper_bound(const key_type& x) const
+		const_iterator	lower_bound(const key_type& x) const
+		{
+			const_iterator	begin = this->begin();
+			const_iterator	end = this->end();
+	
+			while (begin != end)
+			{
+				if (!(_comp(*begin, x)))
+					return (begin);
+				begin++;
+			}
+			return (begin);
+		}
+
+		iterator		upper_bound(const key_type& x)
 		{
 			iterator	begin = this->begin();
 			iterator	end = this->end();
@@ -216,7 +236,26 @@ namespace ft {
 			return (begin);
 		}
 
-		pair<iterator, iterator>	equal_range(const key_type& x) const
+		const_iterator		upper_bound(const key_type& x) const
+		{
+			const_iterator	begin = this->begin();
+			const_iterator	end = this->end();
+	
+			while (begin != end)
+			{
+				if (_comp(x, *begin))
+					return (begin);
+				begin++;
+			}
+			return (begin);
+		}
+
+		pair<iterator, iterator>	equal_range(const key_type& x)
+		{
+			return (ft::make_pair(this->lower_bound(x), this->upper_bound(x)));
+		}
+
+		pair<const_iterator, const_iterator>	equal_range(const key_type& x) const
 		{
 			return (ft::make_pair(this->lower_bound(x), this->upper_bound(x)));
 		}
@@ -255,7 +294,7 @@ namespace ft {
 		friend bool operator>=(const set<T, Compare, Alloc>& x,
 						const set<T, Compare, Alloc>& y)
 		{
-			return !(x < y)
+			return !(x < y);
 		}
 
 		friend bool operator<=(const set<T, Compare, Alloc>& x,
