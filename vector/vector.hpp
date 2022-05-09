@@ -14,9 +14,11 @@
 # define FT_VECTOR_H
 
 # include <memory>
+# include <limits>
 # include <algorithm>
 # include <stdexcept>
 # include <iostream>
+# include <stdint.h>
 # include "iterator.hpp"
 # include "tools.hpp"
 
@@ -158,7 +160,7 @@ namespace ft
 		size_type	max_size() const
 		{
 			if (sizeof(T) == 1)
-				return (PTRDIFF_MAX);
+				return (std::numeric_limits<ptrdiff_t>::max());
 			return (_alloc.max_size());
 		}
 
@@ -412,7 +414,7 @@ namespace ft
 	template <class T, class Allocator>
 	bool	operator<(const vector<T,Allocator>& x, const vector<T,Allocator>& y)
 	{
-		return (lexicographical_compare(x.begin(), x.end(), y.begin(), y.end()));
+		return (ft::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end()));
 	}
 
 	template <class T, class Allocator>

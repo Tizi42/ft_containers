@@ -253,19 +253,20 @@ namespace ft
 			return (this->_base);
 		}
 
-		template<typename T1, typename T2, bool B1, bool B2>
-		friend bool	operator==(const Tree_iterator<T1, B1> lhs,
+		template<typename T2, bool B2>
+		friend bool	operator==(const Tree_iterator<Ty, ConstType> lhs,
 					const Tree_iterator<T2, B2> rhs)
 		{
 			return (lhs.base() == rhs.base());
 		}
 
-		template<typename T1, typename T2, bool B1, bool B2>
-		friend bool	operator!=(const Tree_iterator<T1, B1> lhs,
+		template<typename T2, bool B2>
+		friend bool	operator!=(const Tree_iterator<Ty, ConstType> lhs,
 					const Tree_iterator<T2, B2> rhs)
 		{
 			return (lhs.base() != rhs.base());
 		}
+
 
 		private:
 			Node * _base;
@@ -350,9 +351,9 @@ namespace ft
 		}
 
 		reverse_iterator		rbegin() { return reverse_iterator(this->end()); }	
-		const_reverse_iterator	rbegin() const { return reverse_iterator(this->end()); }
+		const_reverse_iterator	rbegin() const { return const_reverse_iterator(this->end()); }
 		reverse_iterator		rend() { return reverse_iterator(this->begin()); }
-		const_reverse_iterator	rend() const { return reverse_iterator(this->begin()); }
+		const_reverse_iterator	rend() const { return const_reverse_iterator(this->begin()); }
 	
 	//capacity
 		size_type size() const { return (this->_size); }
