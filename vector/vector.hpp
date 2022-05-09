@@ -365,10 +365,10 @@ namespace ft
 		
 		void	swap(vector<T, Allocator>& x)
 		{
-			std::swap(this->_begin, x._begin);
-			std::swap(this->_end, x._end);
-			std::swap(this->_alloc, x._alloc);
-			std::swap(this->_capacity, x._capacity);
+			ft::swap(this->_begin, x._begin);
+			ft::swap(this->_end, x._end);
+			ft::swap(this->_alloc, x._alloc);
+			ft::swap(this->_capacity, x._capacity);
 		}
 
 		void	clear()

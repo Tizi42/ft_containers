@@ -408,10 +408,10 @@ namespace ft
 		{
 			if (this != &rhs)
 			{
-				std::swap(this->_root, rhs._root);
-				std::swap(this->_end, rhs._end);
-				std::swap(this->_size, rhs._size);
-				std::swap(this->_nodeAlloc, rhs._nodeAlloc);
+				ft::swap(this->_root, rhs._root);
+				ft::swap(this->_end, rhs._end);
+				ft::swap(this->_size, rhs._size);
+				ft::swap(this->_nodeAlloc, rhs._nodeAlloc);
 			}
 		}
 
