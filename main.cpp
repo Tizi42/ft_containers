@@ -7,10 +7,10 @@
 	#include <set>
 	namespace ft = std;
 #else
-	#include "../map.hpp"
-	#include "../stack.hpp"
-	#include "../vector.hpp"
-	#include "../set.hpp"
+	#include "map.hpp"
+	#include "stack.hpp"
+	#include "vector.hpp"
+	#include "set.hpp"
 #endif
 
 template <typename MapType>
